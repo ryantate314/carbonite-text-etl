@@ -13,6 +13,7 @@ namespace CarboniteTextMessageImport
       public MessageReader(string filename)
       {
          _reader = XmlReader.Create(filename);
+         
       }
 
 

@@ -44,9 +44,13 @@
   <ItemGroup>
     <Compile Include="Android\TPStatus.cs" />
     <Compile Include="Android\MessageType.cs" />
+    <Compile Include="MessageEnumerator.cs" />
     <Compile Include="MessageReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SmsIterator.cs" />
+    <Compile Include="XmlEntities\Message.cs" />
+    <Compile Include="XmlEntities\Mms.cs" />
     <Compile Include="XmlEntities\Sms.cs" />
   </ItemGroup>
   <ItemGroup>
