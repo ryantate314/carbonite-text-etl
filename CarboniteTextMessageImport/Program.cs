@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CarboniteTextMessageImport.XmlEntities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,36 +30,28 @@ namespace CarboniteTextMessageImport
             return;
          }
 
-         int numSms, numMms;
-         Console.WriteLine("Performing initial message count...");
-         var watch = System.Diagnostics.Stopwatch.StartNew();
-         CountMessages(filename, out numSms, out numMms);
-         watch.Stop();
-         var elapsedMs = watch.ElapsedMilliseconds;
-         double seconds = elapsedMs / 1000.0;
-         Console.WriteLine(String.Format("Number of SMS: {0}, Number of MMS: {1}", numSms, numMms));
-         Console.WriteLine(String.Format("Calculated in {0}s.", seconds));
+         //int numSms, numMms;
+         //Console.WriteLine("Performing initial message count...");
+         //var watch = System.Diagnostics.Stopwatch.StartNew();
+         //CountMessages(filename, out numSms, out numMms);
+         //watch.Stop();
+         //var elapsedMs = watch.ElapsedMilliseconds;
+         //double seconds = elapsedMs / 1000.0;
+         //Console.WriteLine(String.Format("Number of SMS: {0}, Number of MMS: {1}", numSms, numMms));
+         //Console.WriteLine(String.Format("Calculated in {0}s.", seconds));
 
-         using (XmlReader reader = XmlReader.Create(filename))
+         using (MessageReader reader = new MessageReader(filename))
          {
-            reader.Read();
-            watch = System.Diagnostics.Stopwatch.StartNew();
-            reader.ReadToFollowing("mms");
-            watch.Stop();
-            seconds = watch.ElapsedMilliseconds / 1000.0;
-            Console.WriteLine("Took {0}s to seek to mms.", seconds);
-            return;
-
-            reader.ReadToFollowing("smses");
-            UInt64 epochDate;
-            if (!UInt64.TryParse(reader.GetAttribute("backup_date"), out epochDate))
+            var iterator = reader.getSmsIterator();
+            while (iterator.MoveNext())
             {
-               Console.Error.WriteLine("Could not find backup date.");
+               Sms message = iterator.Current;
+               Console.WriteLine(String.Format("On: {0}; From: {1}; Body: {2}", message.Date.ToShortDateString(), message.ContactName, message.Body));
             }
-            DateTime backupDate = new DateTime(1970, 1, 1);
-            backupDate = backupDate.AddMilliseconds(epochDate);
-            Console.WriteLine(String.Format("Backup taken on {0}", backupDate.ToShortDateString()));
          }
+
+         Console.WriteLine("\nPress enter to exit...");
+         Console.ReadLine();
       }
 
       static void PrintUsage()

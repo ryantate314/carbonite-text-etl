@@ -22,7 +22,7 @@ namespace CarboniteTextMessageImport
 
       private T _current;
 
-      public T Current { get; }
+      public T Current { get { return _current; } }
 
       object IEnumerator.Current {
          get {
@@ -41,7 +41,7 @@ namespace CarboniteTextMessageImport
          return Current != null;
       }
 
-      public abstract T GetNextMessage();
+      protected abstract T GetNextMessage();
 
       public void Reset()
       {

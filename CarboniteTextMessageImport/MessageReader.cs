@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CarboniteTextMessageImport.XmlEntities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,21 +10,40 @@ namespace CarboniteTextMessageImport
 {
    class MessageReader : IDisposable
    {
-      private XmlReader _reader;
+      private string _filename;
+      private List<MessageEnumerator<Sms>> _smsEnumerators;
+      private List<MessageEnumerator<Mms>> _mmsEnumerators;
+
       public MessageReader(string filename)
       {
-         _reader = XmlReader.Create(filename);
-         
+         _filename = filename;
+         _smsEnumerators = new List<MessageEnumerator<Sms>>();
+         _mmsEnumerators = new List<MessageEnumerator<Mms>>();
       }
 
+      public SmsIterator getSmsIterator()
+      {
+         SmsIterator iterator = new SmsIterator(_filename);
+         _smsEnumerators.Add(iterator);
+         return iterator;
+      }
 
-
-
+      public MmsIterator getMmsIterator()
+      {
+         MmsIterator iterator = new MmsIterator(_filename);
+         _mmsEnumerators.Add(iterator);
+         return iterator;
+      }
+      
       public void Dispose()
       {
-         if (_reader != null)
+         foreach (var enumerator in _smsEnumerators)
          {
-            _reader.Dispose();
+            enumerator.Dispose();
+         }
+         foreach (var enumerator in _mmsEnumerators)
+         {
+            enumerator.Dispose();
          }
       }
    }
