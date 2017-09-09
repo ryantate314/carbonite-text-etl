@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Android\MessageBox.cs" />
     <Compile Include="Android\TPStatus.cs" />
     <Compile Include="Android\MessageType.cs" />
     <Compile Include="MessageEnumerator.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SmsIterator.cs" />
     <Compile Include="XmlEntities\Message.cs" />
+    <Compile Include="XmlEntities\MessagePart.cs" />
     <Compile Include="XmlEntities\Mms.cs" />
     <Compile Include="XmlEntities\Sms.cs" />
     <Compile Include="XmlEntities\XmlUtilities.cs" />

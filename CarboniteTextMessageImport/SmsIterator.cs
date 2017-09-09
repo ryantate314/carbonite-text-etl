@@ -1,4 +1,5 @@
-﻿using CarboniteTextMessageImport.XmlEntities;
+﻿using Android.Provider.Telephony;
+using CarboniteTextMessageImport.XmlEntities;
 using log4net;
 using System;
 using System.Collections;
@@ -16,7 +17,6 @@ namespace CarboniteTextMessageImport
 
       public SmsIterator(string filename) : base(filename)
       {
-         Reader.Read();
       }
 
       protected override Sms GetNextMessage()
@@ -39,6 +39,7 @@ namespace CarboniteTextMessageImport
          string dateString = Reader.GetAttribute("date");
          ulong epoch = UInt64.Parse(dateString);
          message.Date = XmlUtilities.ParseTimestamp(epoch);
+         message.MessageType = (MessageType)Int32.Parse(Reader.GetAttribute("type"));
 
          return message;
       }

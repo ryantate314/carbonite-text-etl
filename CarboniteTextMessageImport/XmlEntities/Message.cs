@@ -11,6 +11,6 @@ namespace CarboniteTextMessageImport.XmlEntities
       public string Body { get; set; }
       public DateTime Date { get; set; }
       public string ContactName { get; set; }
-      public Android.Provider.Telephony.MessageType MessageType { get; set; }
+      
    }
 }

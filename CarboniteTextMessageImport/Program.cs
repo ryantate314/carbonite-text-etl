@@ -1,4 +1,5 @@
-﻿using CarboniteTextMessageImport.XmlEntities;
+﻿using Android.Provider.Telephony;
+using CarboniteTextMessageImport.XmlEntities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -42,13 +43,26 @@ namespace CarboniteTextMessageImport
 
          using (MessageReader reader = new MessageReader(filename))
          {
-            var iterator = reader.getSmsIterator();
-            while (iterator.MoveNext())
+            using (var iterator = reader.getSmsIterator())
             {
-               Sms message = iterator.Current;
-               Console.WriteLine(String.Format("On: {0}; From: {1}; Body: {2}", message.Date.ToShortDateString(), message.ContactName, message.Body));
+               while (iterator.MoveNext())
+               {
+                  Sms message = iterator.Current;
+                  Console.WriteLine(String.Format("On: {0}; From: {1}; Body: {2}", message.Date.ToShortDateString(), message.ContactName, message.Body));
+               }
             }
-         }
+
+            Console.WriteLine("MMS Messages:");
+
+            using (var iterator = reader.getMmsIterator())
+            {
+               while (iterator.MoveNext())
+               {
+                  Mms message = iterator.Current;
+                  Console.WriteLine(String.Format("On: {0}; {1}: {2}; Num Attachments: {3}", message.Date.ToShortDateString(), message.Box == MessageBox.Inbox ? "From" : "To", message.ContactName, message.Parts.Count));
+               }
+            }
+         }//end using message reader
 
          Console.WriteLine("\nPress enter to exit...");
          Console.ReadLine();

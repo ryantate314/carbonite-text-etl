@@ -10,5 +10,6 @@ namespace CarboniteTextMessageImport.XmlEntities
    {
       public string Address { get; set; }
       public int TPStatus { get; set; }
+      public Android.Provider.Telephony.MessageType MessageType { get; set; }
    }
 }

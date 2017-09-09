@@ -33,6 +33,7 @@ namespace CarboniteTextMessageImport
       public MessageEnumerator(string filename)
       {
          _reader = XmlReader.Create(filename);
+         _reader.Read();
       }
 
       public bool MoveNext()
