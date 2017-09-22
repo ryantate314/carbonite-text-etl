@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using CarboniteXmlParser;
+using MessageImport.Data;
 
 namespace MessageImport
 {
@@ -64,6 +65,11 @@ namespace MessageImport
                }
             }
          }//end using message reader
+
+         var context = new StagingEntities();
+         context.Database.Connection.Open();
+         context.Database.Connection.Close();
+         context.Dispose();
 
          Console.WriteLine("\nPress enter to exit...");
          Console.ReadLine();

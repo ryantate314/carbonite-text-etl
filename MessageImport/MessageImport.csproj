@@ -35,8 +35,15 @@
     <StartupObject>MessageImport.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,17 +52,74 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Address.cs">
+      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\Attachment.cs">
+      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\Message.cs">
+      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\MessageAddress.cs">
+      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\MessageAttachment.cs">
+      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\TextMessageStaging.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TextMessageStaging.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\TextMessageStaging.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\TextMessageStaging.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TextMessageStaging.edmx</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <EntityDeploy Include="Data\TextMessageStaging.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>TextMessageStaging.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="Data\TextMessageStaging.edmx.diagram">
+      <DependentUpon>TextMessageStaging.edmx</DependentUpon>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CarboniteXmlParser\CarboniteXmlParser.csproj">
       <Project>{6ef3d01d-b760-4d9f-9c65-fe4c8616d216}</Project>
       <Name>CarboniteXmlParser</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ConnectionStrings.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="Data\TextMessageStaging.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TextMessageStaging.Context.cs</LastGenOutput>
+      <DependentUpon>TextMessageStaging.edmx</DependentUpon>
+    </Content>
+    <Content Include="Data\TextMessageStaging.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>TextMessageStaging.edmx</DependentUpon>
+      <LastGenOutput>TextMessageStaging.cs</LastGenOutput>
+      <CustomToolNamespace>MessageImport.Data.Staging</CustomToolNamespace>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
