@@ -1,5 +1,5 @@
 ﻿using Android.Provider.Telephony;
-using CarboniteTextMessageImport.XmlEntities;
+using CarboniteXmlParser.XmlEntities;
 using log4net;
 using System;
 using System.Collections;
@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteTextMessageImport
+namespace CarboniteXmlParser
 {
-   class SmsIterator : MessageEnumerator<Sms>
+   public class SmsIterator : MessageEnumerator<Sms>
    {
 
       private static readonly ILog _log = LogManager.GetLogger(typeof(SmsIterator));

@@ -1,14 +1,14 @@
 ﻿using Android.Provider.Telephony;
-using CarboniteTextMessageImport.XmlEntities;
+using CarboniteXmlParser.XmlEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteTextMessageImport
+namespace CarboniteXmlParser
 {
-   class MmsIterator : MessageEnumerator<Mms>
+   public class MmsIterator : MessageEnumerator<Mms>
    {
       public MmsIterator(string filename) : base(filename)
       {

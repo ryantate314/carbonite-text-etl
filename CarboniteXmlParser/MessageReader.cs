@@ -1,4 +1,4 @@
-﻿using CarboniteTextMessageImport.XmlEntities;
+﻿using CarboniteXmlParser.XmlEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace CarboniteTextMessageImport
+namespace CarboniteXmlParser
 {
-   class MessageReader : IDisposable
+   public class MessageReader : IDisposable
    {
       private string _filename;
       private List<MessageEnumerator<Sms>> _smsEnumerators;

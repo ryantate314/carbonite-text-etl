@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteTextMessageImport.XmlEntities
+namespace CarboniteXmlParser.XmlEntities
 {
-   class Message
+   public class Message
    {
       public string Body { get; set; }
       public DateTime Date { get; set; }

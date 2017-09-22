@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CarboniteTextMessageImport")]
+[assembly: AssemblyTitle("MessageImport")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CarboniteTextMessageImport")]
+[assembly: AssemblyProduct("MessageImport")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("6ef3d01d-b760-4d9f-9c65-fe4c8616d216")]
+[assembly: Guid("3e7dccac-b75d-4b32-baee-bf1e2967d080")]
 
 // Version information for an assembly consists of the following four values:
 //

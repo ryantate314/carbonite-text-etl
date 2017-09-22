@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteTextMessageImport.XmlEntities
+namespace CarboniteXmlParser.XmlEntities
 {
-   class MessagePart
+   public class MessagePart
    {
       public int SequenceNum { get; set; }
       public byte[] Data { get; set; }

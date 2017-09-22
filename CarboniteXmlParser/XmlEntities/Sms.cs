@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteTextMessageImport.XmlEntities
+namespace CarboniteXmlParser.XmlEntities
 {
-   class Sms : Message
+   public class Sms : Message
    {
       public string Address { get; set; }
       public int TPStatus { get; set; }

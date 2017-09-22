@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteTextMessageImport.XmlEntities
+namespace CarboniteXmlParser.XmlEntities
 {
    //https://developer.android.com/reference/android/provider/Telephony.BaseMmsColumns.html
-   class Mms : Message
+   public class Mms : Message
    {
       public string MessageId { get; set; }
       public ICollection<string> Addresses { get; set; }

@@ -1,5 +1,5 @@
 ﻿using Android.Provider.Telephony;
-using CarboniteTextMessageImport.XmlEntities;
+using CarboniteXmlParser.XmlEntities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +8,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using CarboniteXmlParser;
 
-namespace CarboniteTextMessageImport
+namespace MessageImport
 {
    class Program
    {

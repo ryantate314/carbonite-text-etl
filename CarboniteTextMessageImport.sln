@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarboniteTextMessageImport", "CarboniteTextMessageImport\CarboniteTextMessageImport.csproj", "{6EF3D01D-B760-4D9F-9C65-FE4C8616D216}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarboniteXmlParser", "CarboniteXmlParser\CarboniteXmlParser.csproj", "{6EF3D01D-B760-4D9F-9C65-FE4C8616D216}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageImport", "MessageImport\MessageImport.csproj", "{3E7DCCAC-B75D-4B32-BAEE-BF1E2967D080}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{6EF3D01D-B760-4D9F-9C65-FE4C8616D216}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EF3D01D-B760-4D9F-9C65-FE4C8616D216}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EF3D01D-B760-4D9F-9C65-FE4C8616D216}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E7DCCAC-B75D-4B32-BAEE-BF1E2967D080}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E7DCCAC-B75D-4B32-BAEE-BF1E2967D080}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E7DCCAC-B75D-4B32-BAEE-BF1E2967D080}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E7DCCAC-B75D-4B32-BAEE-BF1E2967D080}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

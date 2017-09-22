@@ -6,13 +6,9 @@ using System.Threading.Tasks;
 
 namespace Android.Provider.Telephony
 {
-   enum MessageBox
+   public enum MessageType
    {
-      All = 0,
-      Inbox = 1,
-      Sent = 2,
-      Drafts = 3,
-      Outbox = 4,
-      Failed = 5
+      Inbound = 1,
+      Outbound = 2
    }
 }
