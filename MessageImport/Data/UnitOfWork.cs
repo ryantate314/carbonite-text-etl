@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace MessageImport.Data
 {
@@ -15,13 +16,13 @@ namespace MessageImport.Data
             return _context;
          }
       }
-      private DbContextTransaction _trans;
+      private TransactionScope _trans;
 
 
       public UnitOfWork(T context)
       {
          _context = context;
-         _trans = context.Database.BeginTransaction();
+         _trans = new TransactionScope();
       }
 
       public void Commit()
@@ -29,7 +30,8 @@ namespace MessageImport.Data
          try
          {
             _context.SaveChanges();
-            _trans.Commit();
+            _trans.Complete();
+            //_trans.Commit();
          }
          catch (Exception)
          {
@@ -40,7 +42,7 @@ namespace MessageImport.Data
 
       public void Rollback()
       {
-         _trans.Rollback();
+         _trans.Dispose();
       }
 
       public void Dispose()
