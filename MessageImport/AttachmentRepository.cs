@@ -1,6 +1,5 @@
 ﻿using CarboniteXmlParser.XmlEntities;
 using MessageImport.Data;
-using MessageImport.Data.Staging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -64,7 +63,7 @@ namespace MessageImport
       //   return newHash.Equals(oldHash);
       //}
 
-      private async Task<string> SaveFileAsync(string filename, byte[] contents, Data.Staging.Message message)
+      private async Task<string> SaveFileAsync(string filename, byte[] contents, Data.Message message)
       {
          string shortPath = getShortPath(filename, contents);
          string fullPath = getFullPath(shortPath);
@@ -85,7 +84,7 @@ namespace MessageImport
          return shortPath;
       }
 
-      public async void SaveAttachmentAsync(UnitOfWork<StagingEntities> uow, Data.Staging.Message message, MessagePart part)
+      public async void SaveAttachmentAsync(UnitOfWork<StagingContext> uow, Data.Message message, MessagePart part)
       {
 
          string filePath = await SaveFileAsync(part.FileName, part.Data, message);

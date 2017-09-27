@@ -36,14 +36,26 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="MySql.Data.Entity.EF6, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL" />
+    <Reference Include="MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MySql.Data.Entity.EF6, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.Entity.6.9.9\lib\net45\MySql.Data.Entity.EF6.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MySql.Web, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Web.6.9.9\lib\net45\MySql.Web.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
@@ -57,34 +69,34 @@
   <ItemGroup>
     <Compile Include="AttachmentRepository.cs" />
     <Compile Include="Data\Address.cs">
-      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+      <DependentUpon>StagingEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Data\Attachment.cs">
-      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+      <DependentUpon>StagingEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Data\Message.cs">
-      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+      <DependentUpon>StagingEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Data\MessageAddress.cs">
-      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+      <DependentUpon>StagingEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Data\MessageAttachment.cs">
-      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+      <DependentUpon>StagingEntities.tt</DependentUpon>
     </Compile>
-    <Compile Include="Data\TextMessageStaging.Context.cs">
+    <Compile Include="Data\StagingEntities.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>TextMessageStaging.Context.tt</DependentUpon>
+      <DependentUpon>StagingEntities.Context.tt</DependentUpon>
     </Compile>
-    <Compile Include="Data\TextMessageStaging.cs">
+    <Compile Include="Data\StagingEntities.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>TextMessageStaging.tt</DependentUpon>
+      <DependentUpon>StagingEntities.tt</DependentUpon>
     </Compile>
-    <Compile Include="Data\TextMessageStaging.Designer.cs">
+    <Compile Include="Data\StagingEntities.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>TextMessageStaging.edmx</DependentUpon>
+      <DependentUpon>StagingEntities.edmx</DependentUpon>
     </Compile>
     <Compile Include="Data\UnitOfWork.cs" />
     <Compile Include="Program.cs" />
@@ -92,12 +104,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <EntityDeploy Include="Data\TextMessageStaging.edmx">
+    <None Include="AppSettings.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <EntityDeploy Include="Data\StagingEntities.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>TextMessageStaging.Designer.cs</LastGenOutput>
+      <LastGenOutput>StagingEntities.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <None Include="Data\TextMessageStaging.edmx.diagram">
-      <DependentUpon>TextMessageStaging.edmx</DependentUpon>
+    <None Include="Data\StagingEntities.edmx.diagram">
+      <DependentUpon>StagingEntities.edmx</DependentUpon>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
@@ -111,20 +126,22 @@
     <None Include="ConnectionStrings.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="Data\TextMessageStaging.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>TextMessageStaging.Context.cs</LastGenOutput>
-      <DependentUpon>TextMessageStaging.edmx</DependentUpon>
-    </Content>
-    <Content Include="Data\TextMessageStaging.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>TextMessageStaging.edmx</DependentUpon>
-      <LastGenOutput>TextMessageStaging.cs</LastGenOutput>
-      <CustomToolNamespace>MessageImport.Data.Staging</CustomToolNamespace>
-    </Content>
+    <Compile Include="Backup.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\StagingEntities.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>StagingEntities.edmx</DependentUpon>
+      <LastGenOutput>StagingEntities.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Data\StagingEntities.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>StagingEntities.edmx</DependentUpon>
+      <LastGenOutput>StagingEntities.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

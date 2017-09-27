@@ -43,9 +43,15 @@ namespace MessageImport
          //Console.WriteLine(String.Format("Number of SMS: {0}, Number of MMS: {1}", numSms, numMms));
          //Console.WriteLine(String.Format("Calculated in {0}s.", seconds));
 
-         using (var context = new StagingEntities())
-         using (var uow = new UnitOfWork<StagingEntities>(context))
+         var testContext = new StagingContext();
+         testContext.Database.Connection.Open();
+         testContext.Dispose();
+
+         using (var context = new StagingContext())
+         using (var uow = new UnitOfWork<StagingContext>(context))
          {
+           
+
             var fileRepo = new AttachmentRepository(System.Configuration.ConfigurationManager.AppSettings["media-directory"]);
             using (MessageReader reader = new MessageReader(filename))
             {
@@ -68,7 +74,7 @@ namespace MessageImport
                      Console.WriteLine(String.Format("On: {0}; {1}: {2}; Num Attachments: {3}", message.Date.ToShortDateString(), message.Box == MessageBox.Inbox ? "From" : "To", message.ContactName, message.Parts.Count));
                      foreach (var part in message.Parts)
                      {
-                        var objMessage = new MessageImport.Data.Staging.Message()
+                        var objMessage = new MessageImport.Data.Message()
                         {
                            Body = message.Body,
                            SendDate = message.Date
@@ -78,9 +84,9 @@ namespace MessageImport
                   }
                }
             }//end using message reader
-         }
 
-         
+            uow.Rollback();
+         }
 
          Console.WriteLine("\nPress enter to exit...");
          Console.ReadLine();
