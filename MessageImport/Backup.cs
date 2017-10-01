@@ -40,38 +40,43 @@ namespace MessageImport
       {
          using (MessageReader reader = new MessageReader(_filename))
          using (StagingContext context = new StagingContext())
-         using (UnitOfWork<StagingContext> uow = new UnitOfWork<StagingContext>(context))
          {
             context.USP_Truncate_Staging();
             //context.Database.ExecuteSqlCommand("EXECUTE USP_Truncate_Staging();");
 
-            using (var smsIterator = reader.getSmsIterator())
+            context.Database.CommandTimeout = 60 * 5;
+
+            using (UnitOfWork<StagingContext> uow = new UnitOfWork<StagingContext>(context))
             {
-               while (smsIterator.MoveNext())
+
+               using (var smsIterator = reader.getSmsIterator())
                {
-                  var message = ProcessSms(smsIterator.Current, context);
-                  context.Messages.Add(message);
+                  while (smsIterator.MoveNext())
+                  {
+                     var message = ProcessSms(smsIterator.Current, context);
+                     context.Messages.Add(message);
+                  }
                }
-            }
 
-            AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
-            using (var mmsIterator = reader.getMmsIterator())
-            {
-               while (mmsIterator.MoveNext())
+               AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
+               using (var mmsIterator = reader.getMmsIterator())
                {
-                  var message = ProcessMms(mmsIterator.Current, uow, repo);
-                  context.Messages.Add(message);
+                  while (mmsIterator.MoveNext())
+                  {
+                     var message = ProcessMms(mmsIterator.Current, uow, repo);
+                     context.Messages.Add(message);
+                  }
                }
+
+               foreach (var address in _addresses)
+               {
+                  context.Addresses.Add(address.Address);
+               }
+
+               context.SaveChanges();
+
+               uow.Commit();
             }
-
-            foreach (var address in _addresses)
-            {
-               context.Addresses.Add(address.Address);
-            }
-
-            context.SaveChanges();
-
-            uow.Commit();
          }
       }
 

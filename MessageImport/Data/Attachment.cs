@@ -20,7 +20,7 @@ namespace MessageImport.Data
             this.MessageAttachments = new HashSet<MessageAttachment>();
         }
     
-        public long Key { get; set; }
+        public int Key { get; set; }
         public string FileName { get; set; }
         public string Path { get; set; }
         public string MimeType { get; set; }

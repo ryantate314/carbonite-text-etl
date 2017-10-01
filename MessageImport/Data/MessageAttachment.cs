@@ -14,9 +14,9 @@ namespace MessageImport.Data
     
     public partial class MessageAttachment
     {
-        public long Key { get; set; }
-        public long MessageKey { get; set; }
-        public long AttachmentKey { get; set; }
+        public int Key { get; set; }
+        public int MessageKey { get; set; }
+        public int AttachmentKey { get; set; }
     
         public virtual Attachment Attachment { get; set; }
         public virtual Message Message { get; set; }

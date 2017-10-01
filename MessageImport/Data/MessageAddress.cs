@@ -14,11 +14,11 @@ namespace MessageImport.Data
     
     public partial class MessageAddress
     {
-        public long Key { get; set; }
-        public long MessageKey { get; set; }
-        public long AddressKey { get; set; }
+        public int Key { get; set; }
+        public int MessageKey { get; set; }
+        public int AddressKey { get; set; }
     
-        public virtual Message Message { get; set; }
         public virtual Address Address { get; set; }
+        public virtual Message Message { get; set; }
     }
 }

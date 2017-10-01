@@ -22,7 +22,7 @@ namespace MessageImport.Data
       public UnitOfWork(T context)
       {
          _context = context;
-         _trans = new TransactionScope();
+         //_trans = new TransactionScope();
       }
 
       public void Commit()
@@ -30,7 +30,7 @@ namespace MessageImport.Data
          try
          {
             _context.SaveChanges();
-            _trans.Complete();
+            //_trans.Complete();
             //_trans.Commit();
          }
          catch (Exception)
@@ -42,12 +42,12 @@ namespace MessageImport.Data
 
       public void Rollback()
       {
-         _trans.Dispose();
+         //_trans.Dispose();
       }
 
       public void Dispose()
       {
-         _trans.Dispose();
+         //_trans.Dispose();
       }
    }
 }

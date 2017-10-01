@@ -21,7 +21,7 @@ namespace MessageImport.Data
             this.Messages = new HashSet<Message>();
         }
     
-        public long Key { get; set; }
+        public int Key { get; set; }
         public string Number { get; set; }
         public string ContactName { get; set; }
     
