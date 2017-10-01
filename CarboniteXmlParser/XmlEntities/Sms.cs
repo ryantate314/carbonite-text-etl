@@ -12,6 +12,7 @@ namespace CarboniteXmlParser.XmlEntities
    {
       public int TPStatus { get; set; }
       public MessageType MessageType { get; set; }
+      public string Body { get; set; }
 
       public override string GetMessageId()
       {
@@ -23,7 +24,8 @@ namespace CarboniteXmlParser.XmlEntities
             builder.Append(Body);
             hash = Convert.ToBase64String(md5.ComputeHash(Encoding.ASCII.GetBytes(builder.ToString())));
          }
-         return hash;
+         hash.Replace("=", "");
+         return $"sms-{hash}";
       }
    }
 }

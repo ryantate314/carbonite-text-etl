@@ -20,6 +20,8 @@ namespace MessageImport.Data
         public StagingContext()
             : base("name=StagingContext")
         {
+    
+          this.Configuration.AutoDetectChangesEnabled = false;
         }
     
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -27,11 +29,11 @@ namespace MessageImport.Data
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Address> Addresses { get; set; }
         public virtual DbSet<Attachment> Attachments { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<MessageAddress> MessageAddresses { get; set; }
         public virtual DbSet<MessageAttachment> MessageAttachments { get; set; }
+        public virtual DbSet<Address> Addresses { get; set; }
     
         public virtual int USP_Truncate_Staging()
         {

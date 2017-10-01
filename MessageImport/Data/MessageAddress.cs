@@ -18,7 +18,7 @@ namespace MessageImport.Data
         public long MessageKey { get; set; }
         public long AddressKey { get; set; }
     
-        public virtual Address Address { get; set; }
         public virtual Message Message { get; set; }
+        public virtual Address Address { get; set; }
     }
 }

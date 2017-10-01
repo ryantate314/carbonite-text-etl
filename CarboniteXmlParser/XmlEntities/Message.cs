@@ -8,7 +8,7 @@ namespace CarboniteXmlParser.XmlEntities
 {
    public abstract class Message
    {
-      public string Body { get; set; }
+      
       public DateTime Date { get; set; }
       public string ContactName { get; set; }
       public string Address { get; set; }

@@ -32,10 +32,8 @@ namespace CarboniteXmlParser
       {
          Mms message = new Mms();
          message.LineNumber = (Reader as IXmlLineInfo)?.LineNumber ?? -1;
-         message.Body = Reader.GetAttribute("body");
          message.ContactName = Reader.GetAttribute("contact_name");
          message.Address = Reader.GetAttribute("address");
-         message.Body = Reader.GetAttribute("data");
          string dateString = Reader.GetAttribute("date");
          ulong epoch = UInt64.Parse(dateString);
          message.Date = XmlUtilities.ParseTimestamp(epoch);
@@ -55,7 +53,16 @@ namespace CarboniteXmlParser
             {
                MessagePart part = new MessagePart();
                part.SequenceNum = Int32.Parse(Reader.GetAttribute("seq"));
-               part.FileName = Reader.GetAttribute("name");
+
+               string filename = Reader.GetAttribute("fn");
+               string name = Reader.GetAttribute("name");
+
+               part.FileName = filename;
+               if (filename == "null")
+               {
+                  part.FileName = name;
+               }
+
                part.MimeType = Reader.GetAttribute("ct");
                string data = Reader.GetAttribute("data");
                if (data != null)

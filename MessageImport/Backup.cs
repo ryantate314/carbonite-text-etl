@@ -53,12 +53,14 @@ namespace MessageImport
                   context.Messages.Add(message);
                }
             }
+
             AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
             using (var mmsIterator = reader.getMmsIterator())
             {
                while (mmsIterator.MoveNext())
                {
                   var message = ProcessMms(mmsIterator.Current, uow, repo);
+                  context.Messages.Add(message);
                }
             }
 
@@ -69,7 +71,7 @@ namespace MessageImport
 
             context.SaveChanges();
 
-            //uow.Commit();
+            uow.Commit();
          }
       }
 
@@ -82,10 +84,10 @@ namespace MessageImport
             MessageType = ConvertMessageType(sms.MessageType),
             MessageId = sms.GetMessageId()
          };
-         logger.Info("Processing message from line " + sms.LineNumber);
+         logger.Info("Processing SMS from line " + sms.LineNumber);
          if (message.MessageType == MessageType.Received)
          {
-            logger.Info("^Inbound message");
+            //logger.Info("^Inbound message");
             message.FromAddress = AddAddress(sms.ContactName, sms.Address);
          }
          else
@@ -138,7 +140,7 @@ namespace MessageImport
          Address objAddress = objAddressContainer.Address;
          String acceptedName = objAddress.ContactName;
          //If the contact name was not already known, just use the new one without any prompting
-         if (String.IsNullOrEmpty(objAddress.ContactName))
+         if (String.IsNullOrEmpty(objAddress.ContactName) || objAddress.ContactName == "(Unknown)")
          {
             acceptedName = newName;
          }
@@ -149,7 +151,7 @@ namespace MessageImport
             do
             {
                Console.WriteLine($"Inconsistent names for address {objAddress.Number}:");
-               Console.Write($"(a) {objAddress.ContactName} or (b) {newName}?(a,b,custom): ");
+               Console.Write($"(a) {objAddress.ContactName} or (b) {newName}?(a,b,new,custom): ");
                answer = Console.ReadLine();
                if (answer.ToLower() == "a")
                {
@@ -190,7 +192,7 @@ namespace MessageImport
             do
             {
                Console.WriteLine($"Inconsistent addresses for contact {objAddress.ContactName}:");
-               Console.Write($"(a) {objAddress.Number} or (b) {newNumber}?(a,b,custom): ");
+               Console.Write($"(a) {objAddress.Number} or (b) {newNumber}?(a,b,new,custom): ");
                answer = Console.ReadLine();
                if (answer.ToLower() == "a")
                {
@@ -217,8 +219,16 @@ namespace MessageImport
       private Address AddAddress(String name, String address)
       {
          Address objAddress;
-         AddressContainer objAddressContainer = _addresses.Find(a => a.Address.Number == address || a.Address.ContactName == name);
+         AddressContainer objAddressContainer;
          address = SanitizeNumber(address);
+         if (name == "(Unknown)")
+         {
+            objAddressContainer = _addresses.Find(a => a.Address.Number == address);
+         }
+         else
+         {
+            objAddressContainer = _addresses.Find(a => a.Address.Number == address || a.Address.ContactName == name);
+         }
          if (objAddressContainer != null)
          {
             objAddress = objAddressContainer.Address;
@@ -253,8 +263,8 @@ namespace MessageImport
             MessageId = message.GetMessageId(),
             MessageType = ConvertMessageType(message.Box)
          };
+         logger.Info("Processing MMS from line " + message.LineNumber);
          StringBuilder bodyBuilder = new StringBuilder();//lol
-         bodyBuilder.AppendLine(message.Body);
          foreach (var attachment in message.Parts)
          {
             if (attachment.MimeType == "text/plain")
@@ -262,7 +272,7 @@ namespace MessageImport
                bodyBuilder.AppendLine(attachment.Text);
             } else if (attachment.MimeType != "application/smil")
             {
-               fileRepo.SaveAttachmentAsync(uow, objMessage, attachment);
+               fileRepo.SaveAttachmentAsync(uow, objMessage, attachment).Wait();
             }
          }
          if (objMessage.MessageType == MessageType.Received)

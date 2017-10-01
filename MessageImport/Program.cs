@@ -10,13 +10,21 @@ using System.Xml;
 using CarboniteXmlParser;
 using MessageImport.Data;
 using CarboniteXmlParser.Android;
+using log4net;
+using log4net.Config;
 
 namespace MessageImport
 {
    class Program
    {
+
+      private static readonly ILog logger = LogManager.GetLogger(typeof(Program));
+
       static void Main(string[] args)
       {
+
+         BasicConfigurator.Configure();
+
          if (args.Length < 1)
          {
             PrintUsage();
@@ -25,11 +33,12 @@ namespace MessageImport
 
          string filename = args[0];
 
-         Console.WriteLine(filename);
+         logger.Debug("Reading file " + filename);
 
          if (!File.Exists(filename))
          {
-            Console.WriteLine("File not found.");
+            //Console.WriteLine("File not found.");
+            logger.Error("File not found.");
             return;
          }
 

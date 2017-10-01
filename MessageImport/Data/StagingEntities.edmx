@@ -10,7 +10,7 @@
             <PropertyRef Name="Key" />
           </Key>
           <Property Name="Key" Type="uint" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="Number" Type="varchar" MaxLength="12" />
+          <Property Name="Number" Type="varchar" MaxLength="128" />
           <Property Name="ContactName" Type="varchar" MaxLength="128" />
         </EntityType>
         <EntityType Name="Attachment">
@@ -142,16 +142,6 @@
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="StagingEntities" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="Address">
-          <Key>
-            <PropertyRef Name="Key" />
-          </Key>
-          <Property Name="Key" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Number" Type="String" MaxLength="12" FixedLength="false" Unicode="false" />
-          <Property Name="ContactName" Type="String" MaxLength="128" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="MessageAddresses" Relationship="Self.FK_AddressKey_AddressKey" FromRole="Address" ToRole="MessageAddress" />
-          <NavigationProperty Name="Messages" Relationship="Self.FK_FromAddressKey_AddressKey" FromRole="Address" ToRole="Message" />
-        </EntityType>
         <EntityType Name="Attachment">
           <Key>
             <PropertyRef Name="Key" />
@@ -172,10 +162,10 @@
           <Property Name="MessageType" Type="StagingEntities.MessageType" Nullable="false" />
           <Property Name="Status" Type="SByte" Nullable="false" />
           <Property Name="FromAddressKey" Type="Int64" Nullable="false" />
-          <NavigationProperty Name="FromAddress" Relationship="Self.FK_FromAddressKey_AddressKey" FromRole="Message" ToRole="Address" />
           <NavigationProperty Name="MessageAddresses" Relationship="Self.FK_MessageKey_AddressKey" FromRole="Message" ToRole="MessageAddress" />
           <NavigationProperty Name="MessageAttachments" Relationship="Self.FK_MessageKey_MessageKey" FromRole="Message" ToRole="MessageAttachment" />
           <Property Name="MessageId" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="FromAddress" Relationship="StagingEntities.FK_FromAddressKey_AddressKey" FromRole="Message" ToRole="Address" />
         </EntityType>
         <EntityType Name="MessageAddress">
           <Key>
@@ -184,8 +174,8 @@
           <Property Name="Key" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="MessageKey" Type="Int64" Nullable="false" />
           <Property Name="AddressKey" Type="Int64" Nullable="false" />
-          <NavigationProperty Name="Address" Relationship="Self.FK_AddressKey_AddressKey" FromRole="MessageAddress" ToRole="Address" />
           <NavigationProperty Name="Message" Relationship="Self.FK_MessageKey_AddressKey" FromRole="MessageAddress" ToRole="Message" />
+          <NavigationProperty Name="Address" Relationship="StagingEntities.FK_AddressKey_AddressKey" FromRole="MessageAddress" ToRole="Address" />
         </EntityType>
         <EntityType Name="MessageAttachment">
           <Key>
@@ -197,30 +187,6 @@
           <NavigationProperty Name="Attachment" Relationship="Self.FK_AttachmentKey" FromRole="MessageAttachment" ToRole="Attachment" />
           <NavigationProperty Name="Message" Relationship="Self.FK_MessageKey_MessageKey" FromRole="MessageAttachment" ToRole="Message" />
         </EntityType>
-        <Association Name="FK_AddressKey_AddressKey">
-          <End Role="Address" Type="Self.Address" Multiplicity="1" />
-          <End Role="MessageAddress" Type="Self.MessageAddress" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Address">
-              <PropertyRef Name="Key" />
-            </Principal>
-            <Dependent Role="MessageAddress">
-              <PropertyRef Name="AddressKey" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_FromAddressKey_AddressKey">
-          <End Role="Address" Type="Self.Address" Multiplicity="1" />
-          <End Role="Message" Type="Self.Message" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Address">
-              <PropertyRef Name="Key" />
-            </Principal>
-            <Dependent Role="Message">
-              <PropertyRef Name="FromAddressKey" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK_AttachmentKey">
           <End Role="Attachment" Type="Self.Attachment" Multiplicity="1" />
           <End Role="MessageAttachment" Type="Self.MessageAttachment" Multiplicity="*" />
@@ -258,19 +224,10 @@
           </ReferentialConstraint>
         </Association>
         <EntityContainer Name="StagingContext" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="Addresses" EntityType="Self.Address" />
           <EntitySet Name="Attachments" EntityType="Self.Attachment" />
           <EntitySet Name="Messages" EntityType="Self.Message" />
           <EntitySet Name="MessageAddresses" EntityType="Self.MessageAddress" />
           <EntitySet Name="MessageAttachments" EntityType="Self.MessageAttachment" />
-          <AssociationSet Name="FK_AddressKey_AddressKey" Association="Self.FK_AddressKey_AddressKey">
-            <End Role="Address" EntitySet="Addresses" />
-            <End Role="MessageAddress" EntitySet="MessageAddresses" />
-          </AssociationSet>
-          <AssociationSet Name="FK_FromAddressKey_AddressKey" Association="Self.FK_FromAddressKey_AddressKey">
-            <End Role="Address" EntitySet="Addresses" />
-            <End Role="Message" EntitySet="Messages" />
-          </AssociationSet>
           <AssociationSet Name="FK_AttachmentKey" Association="Self.FK_AttachmentKey">
             <End Role="Attachment" EntitySet="Attachments" />
             <End Role="MessageAttachment" EntitySet="MessageAttachments" />
@@ -284,26 +241,60 @@
             <End Role="MessageAttachment" EntitySet="MessageAttachments" />
           </AssociationSet>
           <FunctionImport Name="USP_Truncate_Staging" />
+          <EntitySet Name="Addresses" EntityType="StagingEntities.Address" />
+          <AssociationSet Name="FK_AddressKey_AddressKey" Association="StagingEntities.FK_AddressKey_AddressKey">
+            <End Role="Address" EntitySet="Addresses" />
+            <End Role="MessageAddress" EntitySet="MessageAddresses" />
+          </AssociationSet>
+          <AssociationSet Name="FK_FromAddressKey_AddressKey" Association="StagingEntities.FK_FromAddressKey_AddressKey">
+            <End Role="Address" EntitySet="Addresses" />
+            <End Role="Message" EntitySet="Messages" />
+          </AssociationSet>
         </EntityContainer>
         <EnumType Name="MessageType" UnderlyingType="SByte" a:ExternalTypeName="MessageImport.Data.MessageType" xmlns:a="http://schemas.microsoft.com/ado/2006/04/codegeneration">
           <Member Name="Received" Value="1" />
           <Member Name="Sent" Value="2" />
         </EnumType>
+        <EntityType Name="Address">
+          <Key>
+            <PropertyRef Name="Key" />
+          </Key>
+          <Property Name="Key" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Number" Type="String" MaxLength="128" FixedLength="false" Unicode="false" />
+          <Property Name="ContactName" Type="String" MaxLength="128" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="MessageAddresses" Relationship="StagingEntities.FK_AddressKey_AddressKey" FromRole="Address" ToRole="MessageAddress" />
+          <NavigationProperty Name="Messages" Relationship="StagingEntities.FK_FromAddressKey_AddressKey" FromRole="Address" ToRole="Message" />
+        </EntityType>
+        <Association Name="FK_AddressKey_AddressKey">
+          <End Type="StagingEntities.Address" Role="Address" Multiplicity="1" />
+          <End Type="StagingEntities.MessageAddress" Role="MessageAddress" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Address">
+              <PropertyRef Name="Key" />
+            </Principal>
+            <Dependent Role="MessageAddress">
+              <PropertyRef Name="AddressKey" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_FromAddressKey_AddressKey">
+          <End Type="StagingEntities.Address" Role="Address" Multiplicity="1" />
+          <End Type="StagingEntities.Message" Role="Message" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Address">
+              <PropertyRef Name="Key" />
+            </Principal>
+            <Dependent Role="Message">
+              <PropertyRef Name="FromAddressKey" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="StagingContextStoreContainer" CdmEntityContainer="StagingContext">
-          <EntitySetMapping Name="Addresses">
-            <EntityTypeMapping TypeName="StagingEntities.Address">
-              <MappingFragment StoreEntitySet="Address">
-                <ScalarProperty Name="Key" ColumnName="Key" />
-                <ScalarProperty Name="Number" ColumnName="Number" />
-                <ScalarProperty Name="ContactName" ColumnName="ContactName" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Attachments">
             <EntityTypeMapping TypeName="StagingEntities.Attachment">
               <MappingFragment StoreEntitySet="Attachment">
@@ -346,6 +337,15 @@
             </EntityTypeMapping>
           </EntitySetMapping>
           <FunctionImportMapping FunctionImportName="USP_Truncate_Staging" FunctionName="StagingContext.Store.USP_Truncate_Staging" />
+          <EntitySetMapping Name="Addresses">
+            <EntityTypeMapping TypeName="StagingEntities.Address">
+              <MappingFragment StoreEntitySet="Address">
+                <ScalarProperty Name="ContactName" ColumnName="ContactName" />
+                <ScalarProperty Name="Number" ColumnName="Number" />
+                <ScalarProperty Name="Key" ColumnName="Key" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

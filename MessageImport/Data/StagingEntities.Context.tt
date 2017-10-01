@@ -58,6 +58,8 @@ using System.Linq;
     public <#=code.Escape(container)#>()
         : base("name=<#=container.Name#>")
     {
+
+      this.Configuration.AutoDetectChangesEnabled = false;
 <#
 if (!loader.IsLazyLoadingEnabled(container))
 {

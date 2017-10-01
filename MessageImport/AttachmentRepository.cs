@@ -1,5 +1,7 @@
 ﻿using CarboniteXmlParser.XmlEntities;
+using log4net;
 using MessageImport.Data;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +14,7 @@ namespace MessageImport
 {
    class AttachmentRepository
    {
-
+      private static readonly ILog logger = LogManager.GetLogger(typeof(AttachmentRepository));
       private string _directory;
 
       public AttachmentRepository(string directory)
@@ -28,6 +30,11 @@ namespace MessageImport
          {
             hash = Convert.ToBase64String(md5.ComputeHash(contents));
          }
+
+         //Make short path filename safe
+         //= are just padding.
+         hash = hash.Replace("=", "").Replace("/", "_").Replace("+", "-");
+
          int dotPos = filename.LastIndexOf('.');
          if (dotPos == -1)
          {
@@ -65,6 +72,7 @@ namespace MessageImport
 
       private async Task<string> SaveFileAsync(string filename, byte[] contents, Data.Message message)
       {
+        
          string shortPath = getShortPath(filename, contents);
          string fullPath = getFullPath(shortPath);
 
@@ -84,9 +92,27 @@ namespace MessageImport
          return shortPath;
       }
 
-      public async void SaveAttachmentAsync(UnitOfWork<StagingContext> uow, Data.Message message, MessagePart part)
+      private string GetDefaultExtension(string mimeType)
       {
+         string result;
+         RegistryKey key;
+         object value;
 
+         key = Registry.ClassesRoot.OpenSubKey(@"MIME\Database\Content Type\" + mimeType, false);
+         value = key != null ? key.GetValue("Extension", null) : null;
+         result = value != null ? value.ToString() : string.Empty;
+
+         return result;
+      }
+
+      public async Task SaveAttachmentAsync(UnitOfWork<StagingContext> uow, Data.Message message, MessagePart part)
+      {
+         if (part.FileName == "null")
+         {
+            logger.Warn("Unknown filename detected for file. Message ID: " + message.MessageId);
+            //Query default extension for the mime type instead
+            part.FileName = "unknown" + GetDefaultExtension(part.MimeType);
+         }
          string filePath = await SaveFileAsync(part.FileName, part.Data, message);
 
          Attachment attachment = new Attachment()

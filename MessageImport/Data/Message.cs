@@ -29,10 +29,10 @@ namespace MessageImport.Data
         public long FromAddressKey { get; set; }
         public string MessageId { get; set; }
     
-        public virtual Address FromAddress { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<MessageAddress> MessageAddresses { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<MessageAttachment> MessageAttachments { get; set; }
+        public virtual Address FromAddress { get; set; }
     }
 }
