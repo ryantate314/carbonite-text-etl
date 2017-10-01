@@ -7,7 +7,7 @@
       <Diagram DiagramId="c98ba2dcb9da4bc5ac0fac07734cc5b9" Name="Diagram1">
         <EntityTypeShape EntityType="StagingEntities.Address" Width="1.5" PointX="0.75" PointY="3.75" IsExpanded="true" />
         <EntityTypeShape EntityType="StagingEntities.Attachment" Width="1.5" PointX="3" PointY="8.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="StagingEntities.Message" Width="1.5" PointX="3" PointY="3.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="StagingEntities.Message" Width="1.5" PointX="2.75" PointY="3.25" IsExpanded="true" />
         <EntityTypeShape EntityType="StagingEntities.MessageAddress" Width="1.5" PointX="5.25" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="StagingEntities.MessageAttachment" Width="1.5" PointX="5.25" PointY="3.75" IsExpanded="true" />
         <AssociationConnector Association="StagingEntities.FK_AddressKey_AddressKey" ManuallyRouted="false" />

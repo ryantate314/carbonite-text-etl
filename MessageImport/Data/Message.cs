@@ -24,11 +24,12 @@ namespace MessageImport.Data
         public long Key { get; set; }
         public System.DateTime SendDate { get; set; }
         public string Body { get; set; }
-        public sbyte MessageType { get; set; }
+        public MessageImport.Data.MessageType MessageType { get; set; }
         public sbyte Status { get; set; }
         public long FromAddressKey { get; set; }
+        public string MessageId { get; set; }
     
-        public virtual Address Address { get; set; }
+        public virtual Address FromAddress { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<MessageAddress> MessageAddresses { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

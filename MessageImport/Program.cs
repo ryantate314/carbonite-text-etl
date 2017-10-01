@@ -1,5 +1,4 @@
-﻿using Android.Provider.Telephony;
-using CarboniteXmlParser.XmlEntities;
+﻿using CarboniteXmlParser.XmlEntities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +9,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using CarboniteXmlParser;
 using MessageImport.Data;
+using CarboniteXmlParser.Android;
 
 namespace MessageImport
 {
@@ -33,6 +33,9 @@ namespace MessageImport
             return;
          }
 
+         Backup backup = new Backup(filename, System.Configuration.ConfigurationManager.AppSettings["media-directory"]);
+         backup.run();
+
          //int numSms, numMms;
          //Console.WriteLine("Performing initial message count...");
          //var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -43,50 +46,50 @@ namespace MessageImport
          //Console.WriteLine(String.Format("Number of SMS: {0}, Number of MMS: {1}", numSms, numMms));
          //Console.WriteLine(String.Format("Calculated in {0}s.", seconds));
 
-         var testContext = new StagingContext();
-         testContext.Database.Connection.Open();
-         testContext.Dispose();
+         //var testContext = new StagingContext();
+         //testContext.Database.Connection.Open();
+         //testContext.Dispose();
 
-         using (var context = new StagingContext())
-         using (var uow = new UnitOfWork<StagingContext>(context))
-         {
+         //using (var context = new StagingContext())
+         //using (var uow = new UnitOfWork<StagingContext>(context))
+         //{
            
 
-            var fileRepo = new AttachmentRepository(System.Configuration.ConfigurationManager.AppSettings["media-directory"]);
-            using (MessageReader reader = new MessageReader(filename))
-            {
-               using (var iterator = reader.getSmsIterator())
-               {
-                  while (iterator.MoveNext())
-                  {
-                     Sms message = iterator.Current;
-                     Console.WriteLine(String.Format("On: {0}; From: {1}; Body: {2}", message.Date.ToShortDateString(), message.ContactName, message.Body));
-                  }
-               }
+         //   var fileRepo = new AttachmentRepository(System.Configuration.ConfigurationManager.AppSettings["media-directory"]);
+         //   using (MessageReader reader = new MessageReader(filename))
+         //   {
+         //      using (var iterator = reader.getSmsIterator())
+         //      {
+         //         while (iterator.MoveNext())
+         //         {
+         //            Sms message = iterator.Current;
+         //            Console.WriteLine(String.Format("On: {0}; From: {1}; Body: {2}", message.Date.ToShortDateString(), message.ContactName, message.Body));
+         //         }
+         //      }
 
-               Console.WriteLine("MMS Messages:");
+         //      Console.WriteLine("MMS Messages:");
 
-               using (var iterator = reader.getMmsIterator())
-               {
-                  while (iterator.MoveNext())
-                  {
-                     Mms message = iterator.Current;
-                     Console.WriteLine(String.Format("On: {0}; {1}: {2}; Num Attachments: {3}", message.Date.ToShortDateString(), message.Box == MessageBox.Inbox ? "From" : "To", message.ContactName, message.Parts.Count));
-                     foreach (var part in message.Parts)
-                     {
-                        var objMessage = new MessageImport.Data.Message()
-                        {
-                           Body = message.Body,
-                           SendDate = message.Date
-                        };
-                        fileRepo.SaveAttachmentAsync(uow, objMessage, part);
-                     }
-                  }
-               }
-            }//end using message reader
+         //      using (var iterator = reader.getMmsIterator())
+         //      {
+         //         while (iterator.MoveNext())
+         //         {
+         //            Mms message = iterator.Current;
+         //            Console.WriteLine(String.Format("On: {0}; {1}: {2}; Num Attachments: {3}", message.Date.ToShortDateString(), message.Box == MessageBox.Inbox ? "From" : "To", message.ContactName, message.Parts.Count));
+         //            foreach (var part in message.Parts)
+         //            {
+         //               var objMessage = new MessageImport.Data.Message()
+         //               {
+         //                  Body = message.Body,
+         //                  SendDate = message.Date
+         //               };
+         //               fileRepo.SaveAttachmentAsync(uow, objMessage, part);
+         //            }
+         //         }
+         //      }
+         //   }//end using message reader
 
-            uow.Rollback();
-         }
+         //   uow.Rollback();
+         //}
 
          Console.WriteLine("\nPress enter to exit...");
          Console.ReadLine();

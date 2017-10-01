@@ -1,10 +1,13 @@
-﻿using Android.Provider.Telephony;
+﻿using CarboniteTextMessageImport.Android;
+using CarboniteTextMessageImport.XmlEntities;
+using CarboniteXmlParser.Android;
 using CarboniteXmlParser.XmlEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CarboniteXmlParser
 {
@@ -28,8 +31,10 @@ namespace CarboniteXmlParser
       private Mms parseMessage()
       {
          Mms message = new Mms();
+         message.LineNumber = (Reader as IXmlLineInfo)?.LineNumber ?? -1;
          message.Body = Reader.GetAttribute("body");
          message.ContactName = Reader.GetAttribute("contact_name");
+         message.Address = Reader.GetAttribute("address");
          message.Body = Reader.GetAttribute("data");
          string dateString = Reader.GetAttribute("date");
          ulong epoch = UInt64.Parse(dateString);
@@ -61,6 +66,20 @@ namespace CarboniteXmlParser
 
                message.Parts.Add(part);
             } while (Reader.ReadToNextSibling("part"));
+         }
+      }
+
+      private void _parseAddresses(Mms message)
+      {
+         if (Reader.ReadToDescendant("addrs") && Reader.ReadToDescendant("addr"))
+         {
+            do
+            {
+               Address address = new Address();
+               address.Number = Reader.GetAttribute("address");
+               address.Type = (AddressType)Int32.Parse(Reader.GetAttribute("type"));
+               message.Addresses.Add(address);
+            } while (Reader.ReadToNextSibling("addr"));
          }
       }
    }

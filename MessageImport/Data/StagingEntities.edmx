@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="StagingContext.Store" Provider="MySql.Data.MySqlClient" ProviderManifestToken="5.5" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="StagingContext.Store" Provider="MySql.Data.MySqlClient" ProviderManifestToken="5.5" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Address">
           <Key>
             <PropertyRef Name="Key" />
@@ -31,6 +31,7 @@
           <Property Name="Body" Type="text" Nullable="false" />
           <Property Name="MessageType" Type="tinyint" Nullable="false" />
           <Property Name="Status" Type="tinyint" Nullable="false" />
+          <Property Name="MessageId" Type="varchar" MaxLength="32" Nullable="false" />
           <Property Name="FromAddressKey" Type="uint" Nullable="false" />
         </EntityType>
         <EntityType Name="MessageAddress">
@@ -109,6 +110,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Function Name="USP_Truncate_Staging" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="textMessages_staging" />
         <EntityContainer Name="StagingContextStoreContainer">
           <EntitySet Name="Address" EntityType="Self.Address" Schema="textMessages_staging" store:Type="Tables" />
           <EntitySet Name="Attachment" EntityType="Self.Attachment" Schema="textMessages_staging" store:Type="Tables" />
@@ -136,8 +138,7 @@
             <End Role="MessageAttachment" EntitySet="MessageAttachment" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="StagingEntities" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -168,12 +169,13 @@
           <Property Name="Key" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="SendDate" Type="DateTime" Nullable="false" />
           <Property Name="Body" Type="String" MaxLength="65535" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="MessageType" Type="SByte" Nullable="false" />
+          <Property Name="MessageType" Type="StagingEntities.MessageType" Nullable="false" />
           <Property Name="Status" Type="SByte" Nullable="false" />
           <Property Name="FromAddressKey" Type="Int64" Nullable="false" />
-          <NavigationProperty Name="Address" Relationship="Self.FK_FromAddressKey_AddressKey" FromRole="Message" ToRole="Address" />
+          <NavigationProperty Name="FromAddress" Relationship="Self.FK_FromAddressKey_AddressKey" FromRole="Message" ToRole="Address" />
           <NavigationProperty Name="MessageAddresses" Relationship="Self.FK_MessageKey_AddressKey" FromRole="Message" ToRole="MessageAddress" />
           <NavigationProperty Name="MessageAttachments" Relationship="Self.FK_MessageKey_MessageKey" FromRole="Message" ToRole="MessageAttachment" />
+          <Property Name="MessageId" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="MessageAddress">
           <Key>
@@ -281,7 +283,12 @@
             <End Role="Message" EntitySet="Messages" />
             <End Role="MessageAttachment" EntitySet="MessageAttachments" />
           </AssociationSet>
+          <FunctionImport Name="USP_Truncate_Staging" />
         </EntityContainer>
+        <EnumType Name="MessageType" UnderlyingType="SByte" a:ExternalTypeName="MessageImport.Data.MessageType" xmlns:a="http://schemas.microsoft.com/ado/2006/04/codegeneration">
+          <Member Name="Received" Value="1" />
+          <Member Name="Sent" Value="2" />
+        </EnumType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -310,6 +317,7 @@
           <EntitySetMapping Name="Messages">
             <EntityTypeMapping TypeName="StagingEntities.Message">
               <MappingFragment StoreEntitySet="Message">
+                <ScalarProperty Name="MessageId" ColumnName="MessageId" />
                 <ScalarProperty Name="Key" ColumnName="Key" />
                 <ScalarProperty Name="SendDate" ColumnName="SendDate" />
                 <ScalarProperty Name="Body" ColumnName="Body" />
@@ -337,6 +345,7 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="USP_Truncate_Staging" FunctionName="StagingContext.Store.USP_Truncate_Staging" />
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteXmlParser.Android
+namespace MessageImport.Data
 {
-   public enum MessageType
+   public enum MessageType : sbyte
    {
-      Inbound = 1,
-      Outbound = 2
+      Received = 1,
+      Sent = 2
    }
 }

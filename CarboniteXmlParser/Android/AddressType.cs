@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteXmlParser.Android
+namespace CarboniteTextMessageImport.Android
 {
-   public enum MessageType
+   public enum AddressType
    {
-      Inbound = 1,
-      Outbound = 2
+      From = 0x89,
+      To = 0x97
    }
 }

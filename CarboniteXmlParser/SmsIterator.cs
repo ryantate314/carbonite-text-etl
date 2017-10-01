@@ -1,4 +1,4 @@
-﻿using Android.Provider.Telephony;
+﻿using CarboniteXmlParser.Android;
 using CarboniteXmlParser.XmlEntities;
 using log4net;
 using System;
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CarboniteXmlParser
 {
@@ -33,6 +34,7 @@ namespace CarboniteXmlParser
       private Sms parseMessage()
       {
          Sms message = new Sms();
+         message.LineNumber = (Reader as IXmlLineInfo)?.LineNumber ?? -1;
          message.Body = Reader.GetAttribute("body");
          message.Address = Reader.GetAttribute("address");
          message.ContactName = Reader.GetAttribute("contact_name");

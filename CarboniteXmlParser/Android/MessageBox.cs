@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Android.Provider.Telephony
+namespace CarboniteXmlParser.Android
 {
    public enum MessageBox
    {

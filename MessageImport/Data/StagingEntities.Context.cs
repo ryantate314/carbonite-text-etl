@@ -12,6 +12,8 @@ namespace MessageImport.Data
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.Core.Objects;
+    using System.Linq;
     
     public partial class StagingContext : DbContext
     {
@@ -30,5 +32,10 @@ namespace MessageImport.Data
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<MessageAddress> MessageAddresses { get; set; }
         public virtual DbSet<MessageAttachment> MessageAttachments { get; set; }
+    
+        public virtual int USP_Truncate_Staging()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("USP_Truncate_Staging");
+        }
     }
 }

@@ -6,11 +6,15 @@ using System.Threading.Tasks;
 
 namespace CarboniteXmlParser.XmlEntities
 {
-   public class Message
+   public abstract class Message
    {
       public string Body { get; set; }
       public DateTime Date { get; set; }
       public string ContactName { get; set; }
+      public string Address { get; set; }
+      public int LineNumber { get; set; }
+
+      public abstract string GetMessageId();
       
    }
 }
