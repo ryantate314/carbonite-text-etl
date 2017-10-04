@@ -9,6 +9,8 @@
 ConnectionStrings.config
 AppSettings.config
 
+Backup/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

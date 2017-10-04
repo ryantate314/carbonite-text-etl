@@ -1,0 +1,22 @@
+﻿<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<!--File Created By SMS Backup & Restore v10.01.154 on 18/08/2017 23:17:26-->
+<?xml-stylesheet type="text/xsl" href="sms.xsl"?>
+<smses count="6" backup_set="60700ea8-4d19-4fb9-bb87-344a56c4d8a0" backup_date="1503112648604">
+  <sms protocol="0" address="3148675309" date="1371662647376" type="1" subject="null" body="That's awesome! Do u like it?" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" date_sent="0" readable_date="Jun 19, 2013 1:24:07 PM" contact_name="John Doe" />
+  <sms protocol="0" address="3148675309" date="1371664692476" type="2" subject="null" body="I would like it a lot better if the idiot didnt lose all of my contacts, pictures, music, and saved messages." toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" date_sent="0" readable_date="Jun 19, 2013 1:58:12 PM" contact_name="John Doe" />
+  <sms protocol="0" address="3148675309" date="1371667443908" type="1" subject="null" body="Really? All of it? :/" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" date_sent="0" readable_date="Jun 19, 2013 2:44:03 PM" contact_name="John Doe" />
+  <sms protocol="0" address="3148675309" date="1371667519050" type="2" subject="null" body="Yup. Gotta love Verizon. And my mom made me trade in my old phone for a 100 dollar discount so I'm sol." toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" date_sent="0" readable_date="Jun 19, 2013 2:45:19 PM" contact_name="John Doe" />
+  <sms protocol="0" address="3148675309" date="1371679889436" type="1" subject="null" body="I'm sorry:/ I can try to help you get some..." toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" date_sent="0" readable_date="Jun 19, 2013 6:11:29 PM" contact_name="John Doe" />
+   <mms text_only="1" ct_t="application/vnd.wap.multipart.related" using_mode="0" msg_box="1" secret_mode="0" v="16" retr_txt_cs="null" ct_cls="null" favorite="0" d_rpt_st="0" deletable="0" st="null" sim_imsi="null" creator="null" tr_id="0405BF45CCA00000F460000101" sim_slot="0" read="1" m_id="0405BF45CCA00000F4600001" callback_set="0" m_type="132" retr_txt="null" locked="0" resp_txt="null" rr_st="0" safe_message="0" retr_st="null" reserved="0" msg_id="0" hidden="0" sub="null" rr="null" seen="1" ct_l="null" from_address="null" m_size="null" exp="null" sub_cs="null" sub_id="-1" resp_st="null" date="1371691507000" app_id="0" date_sent="0" pri="null" address="3148675309" read_status="null" d_tm="null" d_rpt="null" device_name="null" spam_report="0" rpt_a="null" m_cls="null" readable_date="Jun 19, 2013 9:25:07 PM" contact_name="John Doe">
+      <parts>
+         <part seq="-1" ct="application/smil" name="null" chset="106" cd="null" fn="null" cid="&lt;0.smil&gt;" cl="null" ctt_s="null" ctt_t="null" text='&lt;smil&gt;&lt;head&gt;&lt;layout&gt;&lt;root-layout width="100%" height="100%"/&gt;&lt;region id="Image" width="100%" height="83%" top="0%" left="0%" fit="meet"/&gt;&lt;region id="Text" width="100%" height="17%" top="84%" left="0%" fit="scroll"/&gt;&lt;/layout&gt;&lt;/head&gt;&lt;body&gt;&lt;par dur="10000ms"&gt;&lt;img src="IMG_5215.jpg" region="Image"/&gt;&lt;/par&gt;&lt;par dur="10000ms"&gt;&lt;img src="IMG_7818.jpg" region="Image"/&gt;&lt;text src="text_2.txt" region="Text"/&gt;&lt;/par&gt;&lt;/body&gt;&lt;/smil&gt;' />
+         <part seq="0" ct="image/jpeg" name="IMG_5215.jpg" chset="null" cd="inline" fn="null" cid="&lt;IMG_5215.jpg&gt;" cl="IMG_5215.jpg" ctt_s="null" ctt_t="null" text="null" data="SSdtIG5ldmVyIGdvbm5hIGdpdmUgeW91IHVwLCBuZXZlciBnb25uYSBsZXQgeW91IGRvd24u" />
+         <part seq="0" ct="image/jpeg" name="IMG_7818.jpg" chset="null" cd="inline" fn="null" cid="&lt;IMG_7818.jpg&gt;" cl="IMG_7818.jpg" ctt_s="null" ctt_t="null" text="null" data="SSdtIG5ldmVyIGdvbm5hIGdpdmUgeW91IHVwLCBuZXZlciBnb25uYSBsZXQgeW91IGRvd24u" />
+         <part seq="0" ct="text/plain" name="null" chset="3" cd="inline" fn="null" cid="&lt;text_2.txt&gt;" cl="text_2.txt" ctt_s="null" ctt_t="null" text="Any others? :)" />
+      </parts>
+      <addrs>
+         <addr address="3148675309" type="137" charset="106" />
+         <addr address="3141592653" type="151" charset="106" />
+      </addrs>
+   </mms>
+</smses>

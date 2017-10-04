@@ -23,6 +23,7 @@ namespace CarboniteXmlParser.XmlEntities
             builder.Append(Date.ToString());
             builder.Append(Body);
             hash = Convert.ToBase64String(md5.ComputeHash(Encoding.ASCII.GetBytes(builder.ToString())));
+            hash = hash.Replace("=", ""); //Remove padding characters
          }
          hash.Replace("=", "");
          return $"sms-{hash}";

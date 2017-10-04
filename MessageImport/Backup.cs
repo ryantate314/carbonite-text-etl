@@ -25,6 +25,7 @@ namespace MessageImport
       }
 
       private List<AddressContainer> _addresses;
+      //private List<Data.Message> _messages;
 
       private string _filename;
       private string _mediaFolder;
@@ -32,6 +33,7 @@ namespace MessageImport
       public Backup(string filename, string mediaFolder)
       {
          _addresses = new List<AddressContainer>();
+         //_messages = new List<Data.Message>();
          this._filename = filename;
          this._mediaFolder = mediaFolder;
       }
@@ -41,6 +43,7 @@ namespace MessageImport
          using (MessageReader reader = new MessageReader(_filename))
          using (StagingContext context = new StagingContext())
          {
+            //context.Database.Log = m => logger.Debug(m);
             context.USP_Truncate_Staging();
             //context.Database.ExecuteSqlCommand("EXECUTE USP_Truncate_Staging();");
 
@@ -54,6 +57,11 @@ namespace MessageImport
                   while (smsIterator.MoveNext())
                   {
                      var message = ProcessSms(smsIterator.Current, context);
+                     //_messages.Add(message);
+                     if (String.IsNullOrEmpty(message.Body))
+                     {
+                        logger.Warn($"({smsIterator.Current.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
+                     }
                      context.Messages.Add(message);
                   }
                }
@@ -64,6 +72,7 @@ namespace MessageImport
                   while (mmsIterator.MoveNext())
                   {
                      var message = ProcessMms(mmsIterator.Current, uow, repo);
+                     //_messages.Add(message);
                      context.Messages.Add(message);
                   }
                }
