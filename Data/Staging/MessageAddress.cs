@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MessageImport.Data
+namespace Data.Staging
 {
     using System;
     using System.Collections.Generic;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MessageImport.Data
+namespace Data
 {
    public enum MessageType : sbyte
    {

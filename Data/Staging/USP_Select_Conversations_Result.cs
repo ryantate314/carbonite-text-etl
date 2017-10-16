@@ -7,19 +7,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MessageImport.Data
+namespace Data.Staging
 {
     using System;
-    using System.Collections.Generic;
     
-    public partial class Attachment
+    public partial class USP_Select_Conversations_Result
     {
-        public int Key { get; set; }
-        public string FileName { get; set; }
-        public string Path { get; set; }
-        public string MimeType { get; set; }
-        public int MessageKey { get; set; }
-    
-        public virtual Message Message { get; set; }
     }
 }

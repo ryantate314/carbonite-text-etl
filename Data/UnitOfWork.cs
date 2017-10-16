@@ -4,11 +4,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Transactions;
+//using System.Transactions;
 
-namespace MessageImport.Data
+namespace Data
 {
-   class UnitOfWork<T> : IDisposable where T : DbContext
+   public class UnitOfWork<T> : IDisposable where T : DbContext
    {
       private T _context;
       public T Context {
@@ -16,7 +16,7 @@ namespace MessageImport.Data
             return _context;
          }
       }
-      private TransactionScope _trans;
+      //private TransactionScope _trans;
 
 
       public UnitOfWork(T context)

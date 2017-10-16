@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MessageImport.Data;
+using Data.Staging;
 using CarboniteXmlParser;
 using CarboniteXmlParser.XmlEntities;
 using System.Text.RegularExpressions;
 using log4net;
+using Data;
 
 namespace MessageImport
 {
@@ -101,9 +102,9 @@ namespace MessageImport
          }
       }
 
-      private MessageImport.Data.Message ProcessSms(Sms sms, StagingContext context)
+      private Data.Staging.Message ProcessSms(Sms sms, StagingContext context)
       {
-         MessageImport.Data.Message message = new Data.Message()
+         Data.Staging.Message message = new Data.Staging.Message()
          {
             Body = sms.Body,
             SendDate = sms.Date,
@@ -281,9 +282,9 @@ namespace MessageImport
          return objAddress;
       }
 
-      private Data.Message ProcessMms(CarboniteXmlParser.XmlEntities.Mms message, UnitOfWork<StagingContext> uow, AttachmentRepository fileRepo)
+      private Data.Staging.Message ProcessMms(CarboniteXmlParser.XmlEntities.Mms message, UnitOfWork<StagingContext> uow, AttachmentRepository fileRepo)
       {
-         Data.Message objMessage = new Data.Message()
+         Data.Staging.Message objMessage = new Data.Staging.Message()
          {
             SendDate = message.Date,
             MessageId = message.GetMessageId(),

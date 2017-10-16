@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageImport", "MessageImp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarboniteXmlParser.Test", "CarboniteXmlParser.Test\CarboniteXmlParser.Test.csproj", "{B755BA49-4EAA-403D-A7AF-C7488474B153}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{B755BA49-4EAA-403D-A7AF-C7488474B153}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B755BA49-4EAA-403D-A7AF-C7488474B153}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B755BA49-4EAA-403D-A7AF-C7488474B153}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

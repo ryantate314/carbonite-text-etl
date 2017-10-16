@@ -7,32 +7,27 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MessageImport.Data
+namespace Data.Staging
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class Message
+    public partial class Address
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Message()
+        public Address()
         {
             this.MessageAddresses = new HashSet<MessageAddress>();
-            this.Attachments = new HashSet<Attachment>();
+            this.Messages = new HashSet<Message>();
         }
     
         public int Key { get; set; }
-        public System.DateTime SendDate { get; set; }
-        public string Body { get; set; }
-        public MessageImport.Data.MessageType MessageType { get; set; }
-        public sbyte Status { get; set; }
-        public string MessageId { get; set; }
-        public Nullable<int> FromAddressKey { get; set; }
+        public string Number { get; set; }
+        public string ContactName { get; set; }
     
-        public virtual Address FromAddress { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<MessageAddress> MessageAddresses { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Attachment> Attachments { get; set; }
+        public virtual ICollection<Message> Messages { get; set; }
     }
 }

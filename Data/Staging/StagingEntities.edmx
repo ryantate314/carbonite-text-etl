@@ -147,7 +147,7 @@
           <Parameter Name="ContactName" Mode="In" Type="String" />
           </FunctionImport>
           </EntityContainer>
-        <EnumType Name="MessageType" UnderlyingType="SByte" a:ExternalTypeName="MessageImport.Data.MessageType" xmlns:a="http://schemas.microsoft.com/ado/2006/04/codegeneration">
+        <EnumType Name="MessageType" UnderlyingType="SByte" a:ExternalTypeName="Data.MessageType" xmlns:a="http://schemas.microsoft.com/ado/2006/04/codegeneration">
           <Member Name="Received" Value="1" />
           <Member Name="Sent" Value="2" />
         </EnumType>

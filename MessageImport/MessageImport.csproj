@@ -72,38 +72,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttachmentRepository.cs" />
-    <Compile Include="Data\Address.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Data\Attachment.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Data\Message.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Data\MessageAddress.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Data\MessageType.cs" />
-    <Compile Include="Data\StagingEntities.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>StagingEntities.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Data\StagingEntities.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Data\StagingEntities.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>StagingEntities.edmx</DependentUpon>
-    </Compile>
-    <Compile Include="Data\UnitOfWork.cs" />
-    <Compile Include="Data\USP_Select_Conversations_Result.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -112,19 +80,16 @@
     <None Include="AppSettings.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <EntityDeploy Include="Data\StagingEntities.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>StagingEntities.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <None Include="Data\StagingEntities.edmx.diagram">
-      <DependentUpon>StagingEntities.edmx</DependentUpon>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CarboniteXmlParser\CarboniteXmlParser.csproj">
       <Project>{6ef3d01d-b760-4d9f-9c65-fe4c8616d216}</Project>
       <Name>CarboniteXmlParser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Data\Data.csproj">
+      <Project>{54bdfe85-5f3c-4cf3-a505-89f027af26f2}</Project>
+      <Name>Data</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -135,18 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Data\StagingEntities.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>StagingEntities.edmx</DependentUpon>
-      <LastGenOutput>StagingEntities.Context.cs</LastGenOutput>
-    </Content>
-    <Content Include="Data\StagingEntities.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>StagingEntities.edmx</DependentUpon>
-      <LastGenOutput>StagingEntities.cs</LastGenOutput>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

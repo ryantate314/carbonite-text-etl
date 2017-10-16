@@ -1,6 +1,6 @@
 ﻿using CarboniteXmlParser.XmlEntities;
 using log4net;
-using MessageImport.Data;
+using Data.Staging;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Data;
 
 namespace MessageImport
 {
@@ -70,7 +71,7 @@ namespace MessageImport
       //   return newHash.Equals(oldHash);
       //}
 
-      private async Task<string> SaveFileAsync(string filename, byte[] contents, Data.Message message)
+      private async Task<string> SaveFileAsync(string filename, byte[] contents, Data.Staging.Message message)
       {
         
          string shortPath = getShortPath(filename, contents);
@@ -105,7 +106,7 @@ namespace MessageImport
          return result;
       }
 
-      public async Task SaveAttachmentAsync(UnitOfWork<StagingContext> uow, Data.Message message, MessagePart part)
+      public async Task SaveAttachmentAsync(UnitOfWork<StagingContext> uow, Data.Staging.Message message, MessagePart part)
       {
          if (part.FileName == "null")
          {
