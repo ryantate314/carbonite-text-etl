@@ -84,9 +84,6 @@
     <Compile Include="Data\MessageAddress.cs">
       <DependentUpon>StagingEntities.tt</DependentUpon>
     </Compile>
-    <Compile Include="Data\MessageAttachment.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
     <Compile Include="Data\MessageType.cs" />
     <Compile Include="Data\StagingEntities.Context.cs">
       <AutoGen>True</AutoGen>
@@ -104,6 +101,9 @@
       <DependentUpon>StagingEntities.edmx</DependentUpon>
     </Compile>
     <Compile Include="Data\UnitOfWork.cs" />
+    <Compile Include="Data\USP_Select_Conversations_Result.cs">
+      <DependentUpon>StagingEntities.tt</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

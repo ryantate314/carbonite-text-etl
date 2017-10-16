@@ -43,7 +43,7 @@ namespace MessageImport
          using (MessageReader reader = new MessageReader(_filename))
          using (StagingContext context = new StagingContext())
          {
-            //context.Database.Log = m => logger.Debug(m);
+            context.Database.Log = m => logger.Debug(m);
             context.USP_Truncate_Staging();
             //context.Database.ExecuteSqlCommand("EXECUTE USP_Truncate_Staging();");
 
@@ -66,11 +66,23 @@ namespace MessageImport
                   }
                }
 
+               //context.SaveChanges();
+
                AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
                using (var mmsIterator = reader.getMmsIterator())
                {
                   while (mmsIterator.MoveNext())
                   {
+                     if (mmsIterator.Current.Parts.Count == 0)
+                     {
+                        logger.Warn($"({mmsIterator.Current.LineNumber}) Discarding MMS with blank body and no attachments. ID={mmsIterator.Current.MessageId}.");
+                        continue;
+                     }
+                     if (mmsIterator.Current.GetMessageId() == "04517B16AADF00004A700003")
+                     {
+
+                     }
+
                      var message = ProcessMms(mmsIterator.Current, uow, repo);
                      //_messages.Add(message);
                      context.Messages.Add(message);
@@ -302,6 +314,25 @@ namespace MessageImport
                ma.Address = objAddress;
                ma.Message = objMessage;
                uow.Context.MessageAddresses.Add(ma);
+               objMessage.MessageAddresses.Add(ma);
+            }
+         }
+         Address inlineAddress = AddAddress(message.ContactName, message.Address);
+         if (inlineAddress != null && !objMessage.MessageAddresses.Any(a => a.Address == inlineAddress))
+         {
+            if (objMessage.MessageType == MessageType.Received)
+            {
+               objMessage.FromAddress = inlineAddress;
+            }
+            else
+            {
+               MessageAddress ma = new MessageAddress()
+               {
+                  Address = inlineAddress,
+                  Message = objMessage
+               };
+               uow.Context.MessageAddresses.Add(ma);
+               objMessage.MessageAddresses.Add(ma);
             }
          }
          objMessage.Body = bodyBuilder.ToString().TrimEnd(new char[] { '\n', ' ' });

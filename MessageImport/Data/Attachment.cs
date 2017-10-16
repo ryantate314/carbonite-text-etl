@@ -14,18 +14,12 @@ namespace MessageImport.Data
     
     public partial class Attachment
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Attachment()
-        {
-            this.MessageAttachments = new HashSet<MessageAttachment>();
-        }
-    
         public int Key { get; set; }
         public string FileName { get; set; }
         public string Path { get; set; }
         public string MimeType { get; set; }
+        public int MessageKey { get; set; }
     
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<MessageAttachment> MessageAttachments { get; set; }
+        public virtual Message Message { get; set; }
     }
 }

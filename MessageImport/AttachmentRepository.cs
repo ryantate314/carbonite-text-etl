@@ -122,13 +122,8 @@ namespace MessageImport
             Path = filePath
          };
 
-         attachment.MessageAttachments.Add(new MessageAttachment()
-         {
-            Attachment = attachment,
-            Message = message
-         });
-
          uow.Context.Attachments.Add(attachment);
+         message.Attachments.Add(attachment);
       }
    }
 }

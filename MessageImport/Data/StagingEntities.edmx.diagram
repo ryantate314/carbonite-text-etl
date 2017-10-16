@@ -9,12 +9,10 @@
         <EntityTypeShape EntityType="StagingEntities.Attachment" Width="1.5" PointX="3" PointY="9.625" />
         <EntityTypeShape EntityType="StagingEntities.Message" Width="1.5" PointX="3" PointY="5.25" />
         <EntityTypeShape EntityType="StagingEntities.MessageAddress" Width="1.5" PointX="5.25" PointY="4.5" />
-        <EntityTypeShape EntityType="StagingEntities.MessageAttachment" Width="1.5" PointX="5.25" PointY="7.625" />
         <AssociationConnector Association="StagingEntities.FK_AddressKey_AddressKey2" />
         <AssociationConnector Association="StagingEntities.FK_MessageFromAddressKey_AddressKey" />
-        <AssociationConnector Association="StagingEntities.FK_AttachmentKey_AttachmentKey" />
-        <AssociationConnector Association="StagingEntities.FK_MessageKey_MessageKey" />
         <AssociationConnector Association="StagingEntities.FK_MessageKey_MessageKey2" />
+        <AssociationConnector Association="StagingEntities.FK_AttachmentMessageKey_MessageKey" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

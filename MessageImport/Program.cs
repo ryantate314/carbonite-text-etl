@@ -23,7 +23,7 @@ namespace MessageImport
       static void Main(string[] args)
       {
 
-         BasicConfigurator.Configure();
+         XmlConfigurator.Configure();
 
          if (args.Length < 1)
          {

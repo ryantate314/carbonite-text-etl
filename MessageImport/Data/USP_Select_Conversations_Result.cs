@@ -10,15 +10,8 @@
 namespace MessageImport.Data
 {
     using System;
-    using System.Collections.Generic;
     
-    public partial class MessageAttachment
+    public partial class USP_Select_Conversations_Result
     {
-        public int Key { get; set; }
-        public int MessageKey { get; set; }
-        public int AttachmentKey { get; set; }
-    
-        public virtual Attachment Attachment { get; set; }
-        public virtual Message Message { get; set; }
     }
 }

@@ -33,11 +33,19 @@ namespace MessageImport.Data
         public virtual DbSet<Attachment> Attachments { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<MessageAddress> MessageAddresses { get; set; }
-        public virtual DbSet<MessageAttachment> MessageAttachments { get; set; }
     
         public virtual int USP_Truncate_Staging()
         {
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("USP_Truncate_Staging");
+        }
+    
+        public virtual ObjectResult<USP_Select_Conversations_Result> USP_Select_Conversations(string contactName)
+        {
+            var contactNameParameter = contactName != null ?
+                new ObjectParameter("ContactName", contactName) :
+                new ObjectParameter("ContactName", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<USP_Select_Conversations_Result>("USP_Select_Conversations", contactNameParameter);
         }
     }
 }

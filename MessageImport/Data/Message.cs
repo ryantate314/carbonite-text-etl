@@ -17,8 +17,8 @@ namespace MessageImport.Data
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Message()
         {
-            this.MessageAttachments = new HashSet<MessageAttachment>();
             this.MessageAddresses = new HashSet<MessageAddress>();
+            this.Attachments = new HashSet<Attachment>();
         }
     
         public int Key { get; set; }
@@ -31,8 +31,8 @@ namespace MessageImport.Data
     
         public virtual Address FromAddress { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<MessageAttachment> MessageAttachments { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<MessageAddress> MessageAddresses { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Attachment> Attachments { get; set; }
     }
 }
