@@ -11,9 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Data;
 
-namespace MessageImport
+namespace Data
 {
-   class AttachmentRepository
+   public class AttachmentRepository
    {
       private static readonly ILog logger = LogManager.GetLogger(typeof(AttachmentRepository));
       private string _directory;
@@ -44,7 +44,7 @@ namespace MessageImport
          return String.Format("{0}.{1}", hash, filename.Substring(dotPos + 1));
       }
 
-      private string getFullPath(string shortPath)
+      private string _getFullPath(string shortPath)
       {
          return _directory + shortPath;
       }
@@ -75,7 +75,7 @@ namespace MessageImport
       {
         
          string shortPath = getShortPath(filename, contents);
-         string fullPath = getFullPath(shortPath);
+         string fullPath = _getFullPath(shortPath);
 
          if (File.Exists(fullPath))
          {
@@ -125,6 +125,11 @@ namespace MessageImport
 
          uow.Context.Attachments.Add(attachment);
          message.Attachments.Add(attachment);
+      }
+
+      public String GetFullPath(string filename)
+      {
+         return _getFullPath(filename);
       }
    }
 }
