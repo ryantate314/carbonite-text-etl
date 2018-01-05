@@ -32,7 +32,11 @@ namespace CarboniteXmlParser
 
       public MessageEnumerator(string filename)
       {
-         _reader = XmlReader.Create(filename);
+         XmlReaderSettings settings = new XmlReaderSettings
+         {
+            CheckCharacters = false //Ignore invalid unicode (emojis)
+         };
+         _reader = XmlReader.Create(filename, settings);
          _reader.Read();
       }
 
