@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl" Alias="Self" Namespace="TextMessagesModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012">
+        <EntityType Name="Attachment">
+          <Key>
+            <PropertyRef Name="Path" />
+            <PropertyRef Name="MessageId" />
+          </Key>
+          <Property Name="FileName" Nullable="false" MaxLength="128" Type="varchar" />
+          <Property Name="Path" Nullable="false" MaxLength="256" Type="varchar" />
+          <Property Name="MimeType" Nullable="false" MaxLength="128" Type="varchar" />
+          <Property Name="MessageId" Nullable="false" MaxLength="32" Type="varchar" />
+        </EntityType>
+        <EntityType Name="Message">
+          <Key>
+            <PropertyRef Name="MessageId" />
+          </Key>
+          <Property Name="MessageId" Nullable="false" MaxLength="32" Type="varchar" />
+          <Property Name="SendDate" Nullable="false" Type="datetime" />
+          <Property Name="Body" Nullable="false" Type="text" />
+          <Property Name="MessageType" Nullable="false" Type="tinyint" />
+          <Property Name="Status" Nullable="false" Type="tinyint" />
+        </EntityType>
+        <EntityType Name="MessageAddress">
+          <Key>
+            <PropertyRef Name="MessageId" />
+            <PropertyRef Name="Number" />
+          </Key>
+          <Property Name="MessageId" Nullable="false" MaxLength="32" Type="varchar" />
+          <Property Name="Number" Nullable="false" MaxLength="10" Type="varchar" />
+          <Property Name="ContactName" MaxLength="64" Type="varchar" />
+          <Property Name="Direction" Nullable="false" Type="tinyint" />
+        </EntityType>
+        <Function Name="USP_Merge" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="USP_Truncate_Staging" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="Staging" />
+        <EntityContainer Name="TextMessagesModelStoreContainer">
+          <EntitySet Name="Attachment" EntityType="Self.Attachment" Schema="Staging" store:Type="Tables" />
+          <EntitySet Name="Message" EntityType="Self.Message" Schema="Staging" store:Type="Tables" />
+          <EntitySet Name="MessageAddress" EntityType="Self.MessageAddress" Schema="Staging" store:Type="Tables" />
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="TextMessagesModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Message">
+          <Key>
+            <PropertyRef Name="MessageId" />
+          </Key>
+          <Property Name="MessageId" Type="String" MaxLength="32" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="SendDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="Body" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="MessageType" Type="TextMessagesModel.MessageType" Nullable="false" />
+          <Property Name="Status" Type="Byte" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Attachment">
+          <Key>
+            <PropertyRef Name="Path" />
+            <PropertyRef Name="MessageId" />
+          </Key>
+          <Property Name="FileName" Type="String" MaxLength="128" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Path" Type="String" MaxLength="256" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="MimeType" Type="String" MaxLength="128" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="MessageId" Type="String" MaxLength="32" FixedLength="false" Unicode="false" Nullable="false" />
+        </EntityType>
+        <EntityContainer Name="StagingContext" annotation:LazyLoadingEnabled="false">
+          <EntitySet Name="Messages" EntityType="Self.Message" />
+          <EntitySet Name="Attachments" EntityType="Self.Attachment" />
+          <FunctionImport Name="USP_Merge" />
+          <FunctionImport Name="USP_Truncate_Staging" />
+          <EntitySet Name="MessageAddresses" EntityType="TextMessagesModel.MessageAddress" />
+        </EntityContainer>
+        <EntityType Name="MessageAddress">
+          <Key>
+            <PropertyRef Name="MessageId" />
+            <PropertyRef Name="Number" />
+          </Key>
+          <Property Name="MessageId" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="false" />
+          <Property Name="Number" Type="String" MaxLength="128" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="ContactName" Type="String" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="Direction" Type="Byte" Nullable="false" />
+        </EntityType>
+        <EnumType Name="MessageType" UnderlyingType="Byte" a:ExternalTypeName="MessageType" xmlns:a="http://schemas.microsoft.com/ado/2006/04/codegeneration">
+          <Member Name="Received" Value="0" />
+          <Member Name="Sent" Value="1" />
+        </EnumType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="TextMessagesModelStoreContainer" CdmEntityContainer="StagingContext">
+          <EntitySetMapping Name="Messages">
+            <EntityTypeMapping TypeName="TextMessagesModel.Message">
+              <MappingFragment StoreEntitySet="Message">
+                <ScalarProperty Name="MessageId" ColumnName="MessageId" />
+                <ScalarProperty Name="SendDate" ColumnName="SendDate" />
+                <ScalarProperty Name="Body" ColumnName="Body" />
+                <ScalarProperty Name="MessageType" ColumnName="MessageType" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Attachments">
+            <EntityTypeMapping TypeName="TextMessagesModel.Attachment">
+              <MappingFragment StoreEntitySet="Attachment">
+                <ScalarProperty Name="FileName" ColumnName="FileName" />
+                <ScalarProperty Name="Path" ColumnName="Path" />
+                <ScalarProperty Name="MimeType" ColumnName="MimeType" />
+                <ScalarProperty Name="MessageId" ColumnName="MessageId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="USP_Merge" FunctionName="TextMessagesModel.Store.USP_Merge" />
+          <EntitySetMapping Name="MessageAddresses">
+            <EntityTypeMapping TypeName="TextMessagesModel.MessageAddress">
+              <MappingFragment StoreEntitySet="MessageAddress">
+                <ScalarProperty Name="Direction" ColumnName="Direction" />
+                <ScalarProperty Name="ContactName" ColumnName="ContactName" />
+                <ScalarProperty Name="Number" ColumnName="Number" />
+                <ScalarProperty Name="MessageId" ColumnName="MessageId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="USP_Truncate_Staging" FunctionName="TextMessagesModel.Store.USP_Truncate_Staging" />
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

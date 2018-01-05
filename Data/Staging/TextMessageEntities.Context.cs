@@ -20,8 +20,8 @@ namespace Data.Staging
         public StagingContext()
             : base("name=StagingContext")
         {
-    
-          this.Configuration.AutoDetectChangesEnabled = false;
+             this.Configuration.AutoDetectChangesEnabled = false;
+            this.Configuration.LazyLoadingEnabled = false;
         }
     
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -29,23 +29,18 @@ namespace Data.Staging
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Address> Addresses { get; set; }
-        public virtual DbSet<Attachment> Attachments { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
+        public virtual DbSet<Attachment> Attachments { get; set; }
         public virtual DbSet<MessageAddress> MessageAddresses { get; set; }
+    
+        public virtual int USP_Merge()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("USP_Merge");
+        }
     
         public virtual int USP_Truncate_Staging()
         {
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("USP_Truncate_Staging");
-        }
-    
-        public virtual ObjectResult<USP_Select_Conversations_Result> USP_Select_Conversations(string contactName)
-        {
-            var contactNameParameter = contactName != null ?
-                new ObjectParameter("ContactName", contactName) :
-                new ObjectParameter("ContactName", typeof(string));
-    
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<USP_Select_Conversations_Result>("USP_Select_Conversations", contactNameParameter);
         }
     }
 }

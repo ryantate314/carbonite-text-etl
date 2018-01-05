@@ -14,11 +14,9 @@ namespace Data.Staging
     
     public partial class MessageAddress
     {
-        public int Key { get; set; }
-        public int MessageKey { get; set; }
-        public int AddressKey { get; set; }
-    
-        public virtual Address Address { get; set; }
-        public virtual Message Message { get; set; }
+        public string MessageId { get; set; }
+        public string Number { get; set; }
+        public string ContactName { get; set; }
+        public byte Direction { get; set; }
     }
 }

@@ -59,8 +59,19 @@
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,64 +80,48 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AttachmentRepository.cs" />
-    <Compile Include="Staging\Address.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
     <Compile Include="Staging\Attachment.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
+      <DependentUpon>TextMessageEntities.tt</DependentUpon>
     </Compile>
+    <Compile Include="AttachmentRepository.cs" />
+    <Compile Include="BatchRepository.cs" />
     <Compile Include="Staging\Message.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
+      <DependentUpon>TextMessageEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Staging\MessageAddress.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
+      <DependentUpon>TextMessageEntities.tt</DependentUpon>
     </Compile>
+    <Compile Include="MessageRepository.cs" />
+    <Compile Include="MessageStatus.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Staging\StagingEntities.Context.cs">
-      <DependentUpon>StagingEntities.Context.tt</DependentUpon>
+    <Compile Include="Staging\AddressDirection.cs" />
+    <Compile Include="Staging\TextMessageEntities.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <DependentUpon>TextMessageEntities.Context.tt</DependentUpon>
     </Compile>
-    <Compile Include="Staging\StagingEntities.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
+    <Compile Include="Staging\TextMessageEntities.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <DependentUpon>TextMessageEntities.tt</DependentUpon>
     </Compile>
-    <Compile Include="Staging\StagingEntities.Designer.cs">
-      <DependentUpon>StagingEntities.edmx</DependentUpon>
+    <Compile Include="Staging\TextMessageEntities.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <DependentUpon>TextMessageEntities.edmx</DependentUpon>
     </Compile>
     <Compile Include="UnitOfWork.cs" />
-    <Compile Include="Staging\USP_Select_Conversations_Result.cs">
-      <DependentUpon>StagingEntities.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EntityDeploy Include="Staging\StagingEntities.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>StagingEntities.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Staging\StagingEntities.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>StagingEntities.edmx</DependentUpon>
-      <LastGenOutput>StagingEntities.Context.cs</LastGenOutput>
-    </Content>
-    <Content Include="Staging\StagingEntities.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>StagingEntities.edmx</DependentUpon>
-      <LastGenOutput>StagingEntities.cs</LastGenOutput>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Staging\StagingEntities.edmx.diagram">
-      <DependentUpon>StagingEntities.edmx</DependentUpon>
+    <EntityDeploy Include="Staging\TextMessageEntities.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>TextMessageEntities.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="Staging\TextMessageEntities.edmx.diagram">
+      <DependentUpon>TextMessageEntities.edmx</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -137,6 +132,18 @@
       <Project>{6ef3d01d-b760-4d9f-9c65-fe4c8616d216}</Project>
       <Name>CarboniteXmlParser</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Staging\TextMessageEntities.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>TextMessageEntities.edmx</DependentUpon>
+      <LastGenOutput>TextMessageEntities.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Staging\TextMessageEntities.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>TextMessageEntities.edmx</DependentUpon>
+      <LastGenOutput>TextMessageEntities.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

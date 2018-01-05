@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Data.Staging;
 using CarboniteXmlParser;
-using CarboniteXmlParser.XmlEntities;
-using System.Text.RegularExpressions;
 using log4net;
 using Data;
+using Data.Staging;
 
 namespace MessageImport
 {
@@ -19,21 +17,11 @@ namespace MessageImport
 
       private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-      private class AddressContainer
-      {
-         public Address Address { get; set; }
-         public bool Overridden { get; set; }
-      }
-
-      private List<AddressContainer> _addresses;
-      //private List<Data.Message> _messages;
-
       private string _filename;
       private string _mediaFolder;
 
       public Backup(string filename, string mediaFolder)
       {
-         _addresses = new List<AddressContainer>();
          //_messages = new List<Data.Message>();
          this._filename = filename;
          this._mediaFolder = mediaFolder;
@@ -44,96 +32,124 @@ namespace MessageImport
          using (MessageReader reader = new MessageReader(_filename))
          using (StagingContext context = new StagingContext())
          {
-            context.Database.Log = m => logger.Debug(m);
+            context.Database.Log = m => Console.Write(m);
             context.USP_Truncate_Staging();
-            //context.Database.ExecuteSqlCommand("EXECUTE USP_Truncate_Staging();");
 
-            context.Database.CommandTimeout = 60 * 5;
+            List<MessageAddress> contacts = new List<MessageAddress>();
+            Dictionary<string, Data.Staging.Message> ssmsMessages = new Dictionary<string, Data.Staging.Message>();
 
-            using (UnitOfWork<StagingContext> uow = new UnitOfWork<StagingContext>(context))
+            using (var smsIterator = reader.getSmsIterator())
             {
-
-               using (var smsIterator = reader.getSmsIterator())
+               while (smsIterator.MoveNext())
                {
-                  while (smsIterator.MoveNext())
+                  string messageId = smsIterator.Current.GetMessageId();
+                  if (ssmsMessages.ContainsKey(messageId))
                   {
-                     var message = ProcessSms(smsIterator.Current, context);
-                     //_messages.Add(message);
-                     if (String.IsNullOrEmpty(message.Body))
-                     {
-                        logger.Warn($"({smsIterator.Current.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
-                     }
-                     context.Messages.Add(message);
+                     logger.Warn($"({smsIterator.Current.LineNumber}) Found duplicate messageID {messageId}.");
+                     continue;
                   }
-               }
-
-               //context.SaveChanges();
-
-               AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
-               using (var mmsIterator = reader.getMmsIterator())
-               {
-                  while (mmsIterator.MoveNext())
+                  var message = ProcessSms(smsIterator.Current, contacts);
+                  if (String.IsNullOrEmpty(message.Body))
                   {
-                     if (mmsIterator.Current.Parts.Count == 0)
-                     {
-                        logger.Warn($"({mmsIterator.Current.LineNumber}) Discarding MMS with blank body and no attachments. ID={mmsIterator.Current.MessageId}.");
-                        continue;
-                     }
-                     if (mmsIterator.Current.GetMessageId() == "04517B16AADF00004A700003")
-                     {
-
-                     }
-
-                     var message = ProcessMms(mmsIterator.Current, uow, repo);
-                     //_messages.Add(message);
-                     context.Messages.Add(message);
+                     logger.Warn($"({smsIterator.Current.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
                   }
+                  ssmsMessages.Add(message.MessageId, message);
                }
-
-               foreach (var address in _addresses)
-               {
-                  context.Addresses.Add(address.Address);
-               }
-
-               context.SaveChanges();
-
-               uow.Commit();
             }
+            
+            //Process media messages while the first batch is saving.
+            Task ssmsInsert = context.BulkInsertAsync(ssmsMessages.Values.ToList());
+            ssmsMessages = null;//Attempt to garbage collect
+            List<Attachment> attachments = new List<Attachment>();
+
+            Dictionary<string, Message> mediaMessages = new Dictionary<string, Message>();
+
+            AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
+            using (var mmsIterator = reader.getMmsIterator())
+            {
+               while (mmsIterator.MoveNext())
+               {
+                  if (mmsIterator.Current.Parts.Count == 0)
+                  {
+                     logger.Warn($"({mmsIterator.Current.LineNumber}) Discarding MMS with blank body and no attachments. ID={mmsIterator.Current.MessageId}.");
+                     continue;
+                  }
+                  if (mediaMessages.ContainsKey(mmsIterator.Current.GetMessageId()))
+                  {
+                     logger.Warn($"({mmsIterator.Current.LineNumber}) Found duplicate multi-media message with id {mmsIterator.Current.GetMessageId()}.");
+                     continue;
+                  }
+
+                  var message = ProcessMms(contacts, attachments, mmsIterator.Current, repo);
+                  mediaMessages.Add(message.MessageId, message);
+               }
+            }
+
+            ssmsInsert.Wait();//Connection can only have one action going at once. (I think)
+            context.BulkInsert(mediaMessages.Values.ToList());
+            context.BulkInsert(contacts);
+            context.BulkInsert(attachments);
+
+            context.USP_Merge();
          }
       }
 
-      private Data.Staging.Message ProcessSms(Sms sms, StagingContext context)
+      private Message ProcessSms(CarboniteXmlParser.XmlEntities.Sms sms, List<MessageAddress> contacts)
       {
-         Data.Staging.Message message = new Data.Staging.Message()
+         Message message = new Message()
          {
             Body = sms.Body,
             SendDate = sms.Date,
             MessageType = ConvertMessageType(sms.MessageType),
             MessageId = sms.GetMessageId()
+            //TODO handle status
          };
          logger.Info("Processing SMS from line " + sms.LineNumber);
-         if (message.MessageType == MessageType.Received)
-         {
-            //logger.Info("^Inbound message");
-            message.FromAddress = AddAddress(sms.ContactName, sms.Address);
-         }
-         else
-         {
-            MessageAddress ma = new MessageAddress();
-            ma.Address = AddAddress(sms.ContactName, sms.Address);
-            ma.Message = message;
-            context.MessageAddresses.Add(ma);
-            message.MessageAddresses.Add(ma);
-         }
+         MessageAddress address = BuildMessageAddress(sms.ContactName, sms.Address, MessageTypeToAddressDirection(sms.MessageType), message.MessageId);
+         contacts.Add(address);
          return message;
       }
 
-      private Data.MessageType ConvertMessageType(CarboniteXmlParser.Android.MessageType type)
+      private MessageAddress BuildMessageAddress(string contactName, string number, AddressDirection direction, string messageId)
       {
-         return (Data.MessageType)type;
+         MessageAddress ma = new MessageAddress()
+         {
+            ContactName = contactName,
+            Direction = (byte)direction,
+            Number = SanitizeNumber(number),
+            MessageId = messageId
+         };
+
+         return ma;
       }
 
-      private Data.MessageType ConvertMessageType(CarboniteXmlParser.Android.MessageBox box)
+      private AddressDirection MessageTypeToAddressDirection(CarboniteXmlParser.Android.MessageType type)
+      {
+         switch (type)
+         {
+            case CarboniteXmlParser.Android.MessageType.Inbound:
+               return AddressDirection.From;
+            case CarboniteXmlParser.Android.MessageType.Outbound:
+               return AddressDirection.To;
+            default:
+               throw new Exception("Invalid message type: " + type);
+         }
+      }
+
+      private MessageType ConvertMessageType(CarboniteXmlParser.Android.MessageType type)
+      {
+         switch (type)
+         {
+            case CarboniteXmlParser.Android.MessageType.Inbound:
+               return MessageType.Received;
+            case CarboniteXmlParser.Android.MessageType.Outbound:
+               return MessageType.Sent;
+            default:
+               throw new Exception("Invalid message type " + type);
+         }
+      }
+
+      private MessageType ConvertMessageType(CarboniteXmlParser.Android.MessageBox box)
       {
          switch (box)
          {
@@ -146,149 +162,14 @@ namespace MessageImport
          }
       }
 
-      private Address AddAddress(String number)
+      private Message ProcessMms(List<MessageAddress> contacts, List<Attachment> attachments, CarboniteXmlParser.XmlEntities.Mms message, AttachmentRepository fileRepo)
       {
-         number = SanitizeNumber(number);
-         AddressContainer container = _addresses.Find(a => a.Address.Number == number);
-         if (container == null)
-         {
-            container = new AddressContainer();
-            container.Address = new Address();
-            container.Address.Number = number;
-            _addresses.Add(container);
-         }
-
-         return container.Address;
-      }
-
-      //Address already exists, but with different name. Was searched by number.
-      private void MergeAddressByDifferentName(AddressContainer objAddressContainer, string newName)
-      {
-         Address objAddress = objAddressContainer.Address;
-         String acceptedName = objAddress.ContactName;
-         //If the contact name was not already known, just use the new one without any prompting
-         if (String.IsNullOrEmpty(objAddress.ContactName) || objAddress.ContactName == "(Unknown)")
-         {
-            acceptedName = newName;
-         }
-         else
-         {
-            string answer = "";
-            bool looping = true;
-            do
-            {
-               Console.WriteLine($"Inconsistent names for address {objAddress.Number}:");
-               Console.Write($"(a) {objAddress.ContactName} or (b) {newName}?(a,b,new,custom): ");
-               answer = Console.ReadLine();
-               if (answer.ToLower() == "a")
-               {
-                  acceptedName = objAddress.ContactName;
-                  looping = false;
-               }
-               else if (answer.ToLower() == "b")
-               {
-                  acceptedName = newName;
-                  looping = false;
-               }
-               else if (answer.Length < 5)
-               {
-                  acceptedName = answer;
-                  Console.Write("Are you sure you want to set the contact name to " + answer + "? (y/n): ");
-                  char yn = (char)Console.Read();
-                  looping = yn == 'y';
-               }
-            } while (looping);
-            objAddressContainer.Overridden = true;
-         }
-      }
-
-      //Address already exists, but with different name. Was searched by number.
-      private void MergeAddressByDifferentNumber(AddressContainer objAddressContainer, string newNumber)
-      {
-         Address objAddress = objAddressContainer.Address;
-         String acceptedNumber = objAddress.ContactName;
-         //If the contact name was not already known, just use the new one without any prompting
-         if (String.IsNullOrEmpty(objAddress.ContactName))
-         {
-            acceptedNumber = newNumber;
-         }
-         else
-         {
-            string answer = "";
-            bool looping = true;
-            do
-            {
-               Console.WriteLine($"Inconsistent addresses for contact {objAddress.ContactName}:");
-               Console.Write($"(a) {objAddress.Number} or (b) {newNumber}?(a,b,new,custom): ");
-               answer = Console.ReadLine();
-               if (answer.ToLower() == "a")
-               {
-                  acceptedNumber = objAddress.ContactName;
-                  looping = false;
-               }
-               else if (answer.ToLower() == "b")
-               {
-                  acceptedNumber = newNumber;
-                  looping = false;
-               }
-               else if (answer.Length != 10)
-               {
-                  acceptedNumber = answer;
-                  Console.Write("Are you sure you want to set the contact address to " + answer + "? (y/n): ");
-                  char yn = (char)Console.Read();
-                  looping = yn == 'y';
-               }
-            } while (looping);
-            objAddressContainer.Overridden = true;
-         }
-      }
-
-      private Address AddAddress(String name, String address)
-      {
-         Address objAddress;
-         AddressContainer objAddressContainer;
-         address = SanitizeNumber(address);
-         if (name == "(Unknown)")
-         {
-            objAddressContainer = _addresses.Find(a => a.Address.Number == address);
-         }
-         else
-         {
-            objAddressContainer = _addresses.Find(a => a.Address.Number == address || a.Address.ContactName == name);
-         }
-         if (objAddressContainer != null)
-         {
-            objAddress = objAddressContainer.Address;
-            if (objAddress.ContactName != name && !objAddressContainer.Overridden)
-            {
-               MergeAddressByDifferentName(objAddressContainer, name);
-               
-            } else if (objAddress.Number != address)
-            {
-               MergeAddressByDifferentNumber(objAddressContainer, address);
-            }
-         } else
-         {
-            //New address
-            objAddress = new Address();
-            objAddress.ContactName = name;
-            objAddress.Number = address;
-            _addresses.Add(new AddressContainer()
-            {
-               Address = objAddress,
-               Overridden = false
-            });
-         }
-         return objAddress;
-      }
-
-      private Data.Staging.Message ProcessMms(CarboniteXmlParser.XmlEntities.Mms message, UnitOfWork<StagingContext> uow, AttachmentRepository fileRepo)
-      {
-         Data.Staging.Message objMessage = new Data.Staging.Message()
+         Message objMessage = new Message()
          {
             SendDate = message.Date,
             MessageId = message.GetMessageId(),
             MessageType = ConvertMessageType(message.Box)
+            //TODO handle status
          };
          logger.Info("Processing MMS from line " + message.LineNumber);
          StringBuilder bodyBuilder = new StringBuilder();//lol
@@ -297,43 +178,31 @@ namespace MessageImport
             if (attachment.MimeType == "text/plain")
             {
                bodyBuilder.AppendLine(attachment.Text);
-            } else if (attachment.MimeType != "application/smil")
+            }
+            else if (attachment.MimeType != "application/smil")
             {
-               fileRepo.SaveAttachmentAsync(uow, objMessage, attachment).Wait();
+               Attachment objAttachment = fileRepo.SaveAttachmentAsync(objMessage, attachment).Result;
+               attachments.Add(objAttachment);
             }
          }
          if (objMessage.MessageType == MessageType.Received)
          {
-            objMessage.FromAddress = AddAddress(message.ContactName, message.Address);
+            MessageAddress fromAddress = BuildMessageAddress(message.ContactName, message.Address, AddressDirection.From, message.GetMessageId());
+            contacts.Add(fromAddress);
          }
+         //Process the list of addresses in the mms conversation.
+         //All contacts in the list only contain numbers, not contact names
          foreach (var address in message.Addresses)
          {
             if (address.Type == CarboniteTextMessageImport.Android.AddressType.To)
             {
-               Address objAddress = AddAddress(address.Number);
-               MessageAddress ma = new MessageAddress();
-               ma.Address = objAddress;
-               ma.Message = objMessage;
-               uow.Context.MessageAddresses.Add(ma);
-               objMessage.MessageAddresses.Add(ma);
-            }
-         }
-         Address inlineAddress = AddAddress(message.ContactName, message.Address);
-         if (inlineAddress != null && !objMessage.MessageAddresses.Any(a => a.Address == inlineAddress))
-         {
-            if (objMessage.MessageType == MessageType.Received)
-            {
-               objMessage.FromAddress = inlineAddress;
-            }
-            else
-            {
-               MessageAddress ma = new MessageAddress()
+               string contactName = String.Empty;
+               if (message.Address.Equals(address.Number))
                {
-                  Address = inlineAddress,
-                  Message = objMessage
-               };
-               uow.Context.MessageAddresses.Add(ma);
-               objMessage.MessageAddresses.Add(ma);
+                  contactName = message.ContactName;
+               }
+               MessageAddress ma = BuildMessageAddress(contactName, address.Number, AddressDirection.To, message.GetMessageId());
+               contacts.Add(ma);
             }
          }
          objMessage.Body = bodyBuilder.ToString().TrimEnd(new char[] { '\n', ' ' });
@@ -348,11 +217,16 @@ namespace MessageImport
             {
                //Remove leading +1
                address = address.Substring(2);
-            } else if (address.Length == 11)
+            }
+            else if (address.Length == 11)
             {
                //Remove leading 1
                address = address.Substring(1);
             }
+         }
+         else
+         {
+            address = "(Unknown)";
          }
          return address;
       }

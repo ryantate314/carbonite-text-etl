@@ -2,7 +2,7 @@
 <#@ include file="EF6.Utility.CS.ttinclude"#><#@
  output extension=".cs"#><#
 
-const string inputFile = @"StagingEntities.edmx";
+const string inputFile = @"TextMessageEntities.edmx";
 var textTransform = DynamicTextTransformation.Create(this);
 var code = new CodeGenerationTools(this);
 var ef = new MetadataTools(this);
@@ -58,8 +58,7 @@ using System.Linq;
     public <#=code.Escape(container)#>()
         : base("name=<#=container.Name#>")
     {
-
-      this.Configuration.AutoDetectChangesEnabled = false;
+         this.Configuration.AutoDetectChangesEnabled = false;
 <#
 if (!loader.IsLazyLoadingEnabled(container))
 {

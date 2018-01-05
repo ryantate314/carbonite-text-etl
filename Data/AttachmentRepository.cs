@@ -71,7 +71,7 @@ namespace Data
       //   return newHash.Equals(oldHash);
       //}
 
-      private async Task<string> SaveFileAsync(string filename, byte[] contents, Data.Staging.Message message)
+      private async Task<string> SaveFileAsync(string filename, byte[] contents, Staging.Message message)
       {
         
          string shortPath = getShortPath(filename, contents);
@@ -106,7 +106,7 @@ namespace Data
          return result;
       }
 
-      public async Task SaveAttachmentAsync(UnitOfWork<StagingContext> uow, Data.Staging.Message message, MessagePart part)
+      public async Task<Attachment> SaveAttachmentAsync(Data.Staging.Message message, MessagePart part)
       {
          if (part.FileName == "null")
          {
@@ -120,11 +120,11 @@ namespace Data
          {
             FileName = part.FileName,
             MimeType = part.MimeType,
-            Path = filePath
+            Path = filePath,
+            MessageId = message.MessageId
          };
 
-         uow.Context.Attachments.Add(attachment);
-         message.Attachments.Add(attachment);
+         return attachment;
       }
 
       public String GetFullPath(string filename)

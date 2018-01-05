@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Data
+namespace Data.Staging
 {
-   public enum MessageType : byte
+   public enum AddressDirection
    {
-      Received = 0,
-      Sent = 1
+      From = 1,
+      To = 2
    }
 }

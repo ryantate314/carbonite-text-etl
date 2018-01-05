@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Data
 {
-   public enum MessageType : byte
+   public enum MessageStatus
    {
-      Received = 0,
+      Failed = 0,
       Sent = 1
    }
 }

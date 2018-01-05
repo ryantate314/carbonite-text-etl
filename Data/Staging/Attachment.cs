@@ -14,12 +14,9 @@ namespace Data.Staging
     
     public partial class Attachment
     {
-        public int Key { get; set; }
         public string FileName { get; set; }
         public string Path { get; set; }
         public string MimeType { get; set; }
-        public int MessageKey { get; set; }
-    
-        public virtual Message Message { get; set; }
+        public string MessageId { get; set; }
     }
 }
