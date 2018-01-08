@@ -1,11 +1,11 @@
-﻿using CarboniteTextMessageImport.Android;
+﻿using CarboniteXmlParser.Android;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteTextMessageImport.XmlEntities
+namespace CarboniteXmlParser.XmlEntities
 {
    public class Address
    {

@@ -1,6 +1,4 @@
-﻿using CarboniteTextMessageImport.XmlEntities;
-using CarboniteXmlParser.Android;
-using System;
+﻿using CarboniteXmlParser.Android;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

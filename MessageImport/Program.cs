@@ -42,7 +42,7 @@ namespace MessageImport
          }
 
          Backup backup = new Backup(filename, System.Configuration.ConfigurationManager.AppSettings["media-directory"]);
-         backup.run();
+         backup.Run();
 
          //int numSms, numMms;
          //Console.WriteLine("Performing initial message count...");

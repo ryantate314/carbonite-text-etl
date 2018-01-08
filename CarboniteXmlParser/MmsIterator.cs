@@ -1,12 +1,6 @@
-﻿using CarboniteTextMessageImport.Android;
-using CarboniteTextMessageImport.XmlEntities;
-using CarboniteXmlParser.Android;
+﻿using CarboniteXmlParser.Android;
 using CarboniteXmlParser.XmlEntities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace CarboniteXmlParser
@@ -41,6 +35,7 @@ namespace CarboniteXmlParser
          message.Box = (MessageBox)Int32.Parse(Reader.GetAttribute("msg_box"));
 
          _parseParts(message);
+         _parseAddresses(message);
 
          return message;
       }
@@ -78,7 +73,7 @@ namespace CarboniteXmlParser
 
       private void _parseAddresses(Mms message)
       {
-         if (Reader.ReadToDescendant("addrs") && Reader.ReadToDescendant("addr"))
+         if (Reader.ReadToNextSibling("addrs") && Reader.ReadToDescendant("addr"))
          {
             do
             {

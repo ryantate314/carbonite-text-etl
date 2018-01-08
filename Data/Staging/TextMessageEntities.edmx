@@ -4,38 +4,39 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl" Alias="Self" Namespace="TextMessagesModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012">
+    <Schema Namespace="TextMessagesModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Attachment">
           <Key>
             <PropertyRef Name="Path" />
             <PropertyRef Name="MessageId" />
           </Key>
-          <Property Name="FileName" Nullable="false" MaxLength="128" Type="varchar" />
-          <Property Name="Path" Nullable="false" MaxLength="256" Type="varchar" />
-          <Property Name="MimeType" Nullable="false" MaxLength="128" Type="varchar" />
-          <Property Name="MessageId" Nullable="false" MaxLength="32" Type="varchar" />
+          <Property Name="FileName" Type="varchar" MaxLength="128" Nullable="false" />
+          <Property Name="Path" Type="varchar" MaxLength="256" Nullable="false" />
+          <Property Name="MimeType" Type="varchar" MaxLength="128" Nullable="false" />
+          <Property Name="MessageId" Type="varchar" MaxLength="32" Nullable="false" />
         </EntityType>
         <EntityType Name="Message">
           <Key>
             <PropertyRef Name="MessageId" />
           </Key>
-          <Property Name="MessageId" Nullable="false" MaxLength="32" Type="varchar" />
-          <Property Name="SendDate" Nullable="false" Type="datetime" />
-          <Property Name="Body" Nullable="false" Type="text" />
-          <Property Name="MessageType" Nullable="false" Type="tinyint" />
-          <Property Name="Status" Nullable="false" Type="tinyint" />
+          <Property Name="MessageId" Type="varchar" MaxLength="32" Nullable="false" />
+          <Property Name="SendDate" Type="datetime" Nullable="false" />
+          <Property Name="Body" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="MessageType" Type="tinyint" Nullable="false" />
+          <Property Name="Status" Type="tinyint" Nullable="false" />
         </EntityType>
         <EntityType Name="MessageAddress">
           <Key>
             <PropertyRef Name="MessageId" />
             <PropertyRef Name="Number" />
           </Key>
-          <Property Name="MessageId" Nullable="false" MaxLength="32" Type="varchar" />
-          <Property Name="Number" Nullable="false" MaxLength="10" Type="varchar" />
-          <Property Name="ContactName" MaxLength="64" Type="varchar" />
-          <Property Name="Direction" Nullable="false" Type="tinyint" />
+          <Property Name="MessageId" Type="varchar" MaxLength="32" Nullable="false" />
+          <Property Name="Number" Type="varchar" MaxLength="128" Nullable="false" />
+          <Property Name="ContactName" Type="varchar" MaxLength="64" />
+          <Property Name="Direction" Type="tinyint" Nullable="false" />
         </EntityType>
         <Function Name="USP_Merge" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="USP_Select_Contact_Options" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="Staging" />
         <Function Name="USP_Truncate_Staging" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="Staging" />
         <EntityContainer Name="TextMessagesModelStoreContainer">
           <EntitySet Name="Attachment" EntityType="Self.Attachment" Schema="Staging" store:Type="Tables" />
@@ -52,7 +53,7 @@
           </Key>
           <Property Name="MessageId" Type="String" MaxLength="32" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="SendDate" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="Body" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Body" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="MessageType" Type="TextMessagesModel.MessageType" Nullable="false" />
           <Property Name="Status" Type="Byte" Nullable="false" />
         </EntityType>
@@ -72,6 +73,7 @@
           <FunctionImport Name="USP_Merge" />
           <FunctionImport Name="USP_Truncate_Staging" />
           <EntitySet Name="MessageAddresses" EntityType="TextMessagesModel.MessageAddress" />
+          <FunctionImport Name="USP_Select_Contact_Options" ReturnType="Collection(TextMessagesModel.USP_Select_Contact_Options_Result)" />
         </EntityContainer>
         <EntityType Name="MessageAddress">
           <Key>
@@ -87,6 +89,10 @@
           <Member Name="Received" Value="0" />
           <Member Name="Sent" Value="1" />
         </EnumType>
+        <ComplexType Name="USP_Select_Contact_Options_Result">
+          <Property Type="String" Name="Number" Nullable="true" MaxLength="128" />
+          <Property Type="String" Name="ContactName" Nullable="true" MaxLength="128" />
+        </ComplexType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -126,6 +132,14 @@
             </EntityTypeMapping>
           </EntitySetMapping>
           <FunctionImportMapping FunctionImportName="USP_Truncate_Staging" FunctionName="TextMessagesModel.Store.USP_Truncate_Staging" />
+          <FunctionImportMapping FunctionImportName="USP_Select_Contact_Options" FunctionName="TextMessagesModel.Store.USP_Select_Contact_Options">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="TextMessagesModel.USP_Select_Contact_Options_Result">
+                <ScalarProperty Name="Number" ColumnName="Number" />
+                <ScalarProperty Name="ContactName" ColumnName="ContactName" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

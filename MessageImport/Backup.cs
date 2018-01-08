@@ -7,6 +7,8 @@ using CarboniteXmlParser;
 using log4net;
 using Data;
 using Data.Staging;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace MessageImport
 {
@@ -20,6 +22,9 @@ namespace MessageImport
       private string _filename;
       private string _mediaFolder;
 
+      private static readonly string DEFAULT_CONTACT_NAME = "(Unknown)";
+      private static readonly string DEFAULT_CONTACT_NUMBER = "";
+
       public Backup(string filename, string mediaFolder)
       {
          //_messages = new List<Data.Message>();
@@ -27,12 +32,12 @@ namespace MessageImport
          this._mediaFolder = mediaFolder;
       }
 
-      public void run()
+      public void Run()
       {
          using (MessageReader reader = new MessageReader(_filename))
          using (StagingContext context = new StagingContext())
          {
-            context.Database.Log = m => Console.Write(m);
+            context.Database.Log = m => logger.Info(m);
             context.USP_Truncate_Staging();
 
             List<MessageAddress> contacts = new List<MessageAddress>();
@@ -84,12 +89,89 @@ namespace MessageImport
                   mediaMessages.Add(message.MessageId, message);
                }
             }
-
             ssmsInsert.Wait();//Connection can only have one action going at once. (I think)
             context.BulkInsert(mediaMessages.Values.ToList());
-            context.BulkInsert(contacts);
             context.BulkInsert(attachments);
+            context.BulkInsert(contacts);
 
+            //TODO refactor contact option logic
+            //Group MessageAddresses by number and show a list of possible contact name
+            var contactOptions = context.USP_Select_Contact_Options();
+            var groupedContactOptions = contactOptions.GroupBy(o => o.Number, o => o.ContactName)
+                                                      .ToDictionary(go => go.Key, go => go.ToList());
+
+            //Using a data table because EF doesn't support table valued parameters
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Number", typeof(string));
+            dt.Columns.Add("NewName", typeof(string));
+            
+            foreach (KeyValuePair<string, List<string>> entry in groupedContactOptions)
+            {
+               string newName = entry.Value.FirstOrDefault();
+               if (entry.Value.Count > 1 || String.IsNullOrEmpty(newName) || newName == DEFAULT_CONTACT_NAME)
+               {
+                  //Select a sample list of text message
+                  var sampleMessages = (from m in context.Messages
+                                        join ma in context.MessageAddresses on m.MessageId equals ma.MessageId
+                                        where ma.Number == entry.Key
+                                        select m.Body
+                                        ).Take(5);
+                     
+                     //context.Messages.Join(Select(m => m.Body).Take(5);
+                  //Build a list of options for the user to choose from
+                  Console.WriteLine($"Select an address for number {entry.Key}:");
+                  for (int i = 0; i < entry.Value.Count; i++)
+                  {
+                     Console.Write($"({i + 1}) {entry.Value[i]}, ");
+                  }
+                  Console.WriteLine("Type for Manual Entry");
+                  foreach (var message in sampleMessages)
+                  {
+                     Console.WriteLine(message.Substring(0, Math.Min(message.Length, Console.WindowWidth)));
+                  }
+                  bool valid;
+                  do
+                  {
+                     valid = true;//Default true so leaving blank sets the default
+                     Console.Write("(1): ");//Communicate default of 1
+                     //Read user response
+                     string response = Console.ReadLine();
+                     if (!String.IsNullOrEmpty(response))
+                     {
+                        int option = -1;
+                        if (Int32.TryParse(response, out option))
+                        {
+                           option--;//Convert to 0-index.
+                           //The user selected an option rather than typing one
+                           if (option >= 0 && option < entry.Value.Count)
+                           {
+                              newName = entry.Value[option];
+                           }
+                           else
+                           {
+                              Console.WriteLine("Invalid option.");
+                              valid = false;
+                           }
+                        }//End If response is an integer
+                        else
+                        {
+                           //Override
+                           newName = response;
+                        }
+                     }//End If null or empty
+                  } while (!valid);
+               }//End if more than one option
+
+               dt.Rows.Add(entry.Key, newName);
+
+            }//End foreach contact
+
+            var param = new SqlParameter("contactInfo", SqlDbType.Structured);
+            param.Value = dt;
+            param.TypeName = "dbo.ContactInfo";
+            string command = "EXEC Staging.USP_Update_Contacts @contactInfo";
+            context.Database.ExecuteSqlCommand(command, param);
+            
             context.USP_Merge();
          }
       }
@@ -114,13 +196,62 @@ namespace MessageImport
       {
          MessageAddress ma = new MessageAddress()
          {
-            ContactName = contactName,
+            ContactName = SanitizeContactName(contactName),
             Direction = (byte)direction,
             Number = SanitizeNumber(number),
             MessageId = messageId
          };
 
          return ma;
+      }
+
+
+      private Message ProcessMms(List<MessageAddress> contacts, List<Attachment> attachments, CarboniteXmlParser.XmlEntities.Mms message, AttachmentRepository fileRepo)
+      {
+         Message objMessage = new Message()
+         {
+            SendDate = message.Date,
+            MessageId = message.GetMessageId(),
+            MessageType = ConvertMessageType(message.Box)
+            //TODO handle status
+         };
+         logger.Info("Processing MMS from line " + message.LineNumber);
+         StringBuilder bodyBuilder = new StringBuilder();//lol
+         foreach (var attachment in message.Parts)
+         {
+            if (attachment.MimeType == "text/plain")
+            {
+               bodyBuilder.AppendLine(attachment.Text);
+            }
+            else if (attachment.MimeType != "application/smil")
+            {
+               Attachment objAttachment = fileRepo.SaveAttachmentAsync(objMessage, attachment).Result;
+               attachments.Add(objAttachment);
+            }
+         }
+         //if (objMessage.MessageType == MessageType.Received)
+         //{
+         //   //TODO split inline contact name by ~
+         //   if (!String.IsNullOrEmpty(message.Address) && !message.Address.Contains("~"))
+         //   {
+         //      MessageAddress fromAddress = BuildMessageAddress(message.ContactName, message.Address, AddressDirection.From, message.GetMessageId());
+         //      contacts.Add(fromAddress);
+         //   }
+         //}
+         //Process the list of addresses in the mms conversation.
+         //All contacts in the list only contain numbers, not contact names
+         foreach (var address in message.Addresses)
+         {
+            string contactName = String.Empty;
+            if (!String.IsNullOrEmpty(message.Address) && message.Address.Equals(address.Number))
+            {
+               contactName = message.ContactName;
+            }
+            MessageAddress ma = BuildMessageAddress(contactName, address.Number, AddressTypeToAddressDirection(address.Type), message.GetMessageId());
+            contacts.Add(ma);
+         }
+         objMessage.Body = bodyBuilder.ToString().TrimEnd(new char[] { '\n', ' ' });
+         return objMessage;
       }
 
       private AddressDirection MessageTypeToAddressDirection(CarboniteXmlParser.Android.MessageType type)
@@ -162,51 +293,17 @@ namespace MessageImport
          }
       }
 
-      private Message ProcessMms(List<MessageAddress> contacts, List<Attachment> attachments, CarboniteXmlParser.XmlEntities.Mms message, AttachmentRepository fileRepo)
+      private AddressDirection AddressTypeToAddressDirection(CarboniteXmlParser.Android.AddressType addressType)
       {
-         Message objMessage = new Message()
+         switch (addressType)
          {
-            SendDate = message.Date,
-            MessageId = message.GetMessageId(),
-            MessageType = ConvertMessageType(message.Box)
-            //TODO handle status
-         };
-         logger.Info("Processing MMS from line " + message.LineNumber);
-         StringBuilder bodyBuilder = new StringBuilder();//lol
-         foreach (var attachment in message.Parts)
-         {
-            if (attachment.MimeType == "text/plain")
-            {
-               bodyBuilder.AppendLine(attachment.Text);
-            }
-            else if (attachment.MimeType != "application/smil")
-            {
-               Attachment objAttachment = fileRepo.SaveAttachmentAsync(objMessage, attachment).Result;
-               attachments.Add(objAttachment);
-            }
+            case CarboniteXmlParser.Android.AddressType.From:
+               return AddressDirection.From;
+            case CarboniteXmlParser.Android.AddressType.To:
+               return AddressDirection.To;
+            default:
+               throw new Exception("Unknown Address Type: " + addressType);
          }
-         if (objMessage.MessageType == MessageType.Received)
-         {
-            MessageAddress fromAddress = BuildMessageAddress(message.ContactName, message.Address, AddressDirection.From, message.GetMessageId());
-            contacts.Add(fromAddress);
-         }
-         //Process the list of addresses in the mms conversation.
-         //All contacts in the list only contain numbers, not contact names
-         foreach (var address in message.Addresses)
-         {
-            if (address.Type == CarboniteTextMessageImport.Android.AddressType.To)
-            {
-               string contactName = String.Empty;
-               if (message.Address.Equals(address.Number))
-               {
-                  contactName = message.ContactName;
-               }
-               MessageAddress ma = BuildMessageAddress(contactName, address.Number, AddressDirection.To, message.GetMessageId());
-               contacts.Add(ma);
-            }
-         }
-         objMessage.Body = bodyBuilder.ToString().TrimEnd(new char[] { '\n', ' ' });
-         return objMessage;
       }
 
       private string SanitizeNumber(string address)
@@ -226,9 +323,23 @@ namespace MessageImport
          }
          else
          {
-            address = "(Unknown)";
+            address = DEFAULT_CONTACT_NAME;
          }
          return address;
+      }
+
+      private string SanitizeContactName(string name)
+      {
+         string sanitized = name;
+         if (name == null)
+         {
+            sanitized = String.Empty;
+         }
+         else if (DEFAULT_CONTACT_NAME.Equals(name))
+         {
+            sanitized = "";
+         }
+         return sanitized;
       }
    }
 }

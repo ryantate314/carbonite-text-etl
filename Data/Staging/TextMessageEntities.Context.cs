@@ -42,5 +42,10 @@ namespace Data.Staging
         {
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("USP_Truncate_Staging");
         }
+    
+        public virtual ObjectResult<USP_Select_Contact_Options_Result> USP_Select_Contact_Options()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<USP_Select_Contact_Options_Result>("USP_Select_Contact_Options");
+        }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarboniteTextMessageImport.Android
+namespace CarboniteXmlParser.Android
 {
    public enum AddressType
    {

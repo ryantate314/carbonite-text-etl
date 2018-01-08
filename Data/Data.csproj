@@ -84,14 +84,12 @@
       <DependentUpon>TextMessageEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="AttachmentRepository.cs" />
-    <Compile Include="BatchRepository.cs" />
     <Compile Include="Staging\Message.cs">
       <DependentUpon>TextMessageEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Staging\MessageAddress.cs">
       <DependentUpon>TextMessageEntities.tt</DependentUpon>
     </Compile>
-    <Compile Include="MessageRepository.cs" />
     <Compile Include="MessageStatus.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -110,6 +108,9 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TextMessageEntities.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Staging\USP_Select_Contact_Options_Result.cs">
+      <DependentUpon>TextMessageEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="UnitOfWork.cs" />
   </ItemGroup>
