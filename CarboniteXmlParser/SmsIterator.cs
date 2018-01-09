@@ -16,7 +16,7 @@ namespace CarboniteXmlParser
 
       private static readonly ILog _log = LogManager.GetLogger(typeof(SmsIterator));
 
-      public SmsIterator(string filename) : base(filename)
+      public SmsIterator(XmlReaderRepository repo) : base(repo)
       {
       }
 
@@ -44,6 +44,11 @@ namespace CarboniteXmlParser
          message.MessageType = (MessageType)Int32.Parse(Reader.GetAttribute("type"));
 
          return message;
+      }
+
+      protected override void Dispose(bool disposing)
+      {
+         ReleaseReader(XmlReaderStatus.AtMMS);
       }
    }
 }

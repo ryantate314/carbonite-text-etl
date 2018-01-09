@@ -5,9 +5,9 @@ using System.Xml;
 
 namespace CarboniteXmlParser
 {
-   public class MmsIterator : MessageEnumerator<Mms>
+   public class MmsEnumerator : MessageEnumerator<Mms>
    {
-      public MmsIterator(string filename) : base(filename)
+      public MmsEnumerator(XmlReaderRepository repo) : base(repo)
       {
       }
 

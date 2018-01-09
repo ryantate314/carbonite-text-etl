@@ -43,23 +43,20 @@ namespace MessageImport
             List<MessageAddress> contacts = new List<MessageAddress>();
             Dictionary<string, Data.Staging.Message> ssmsMessages = new Dictionary<string, Data.Staging.Message>();
 
-            using (var smsIterator = reader.getSmsIterator())
+            foreach (var rawMessage in reader.TextMessages)
             {
-               while (smsIterator.MoveNext())
+               string messageId = rawMessage.GetMessageId();
+               if (ssmsMessages.ContainsKey(messageId))
                {
-                  string messageId = smsIterator.Current.GetMessageId();
-                  if (ssmsMessages.ContainsKey(messageId))
-                  {
-                     logger.Warn($"({smsIterator.Current.LineNumber}) Found duplicate messageID {messageId}.");
-                     continue;
-                  }
-                  var message = ProcessSms(smsIterator.Current, contacts);
-                  if (String.IsNullOrEmpty(message.Body))
-                  {
-                     logger.Warn($"({smsIterator.Current.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
-                  }
-                  ssmsMessages.Add(message.MessageId, message);
+                  logger.Warn($"({rawMessage.LineNumber}) Found duplicate messageID {messageId}.");
+                  continue;
                }
+               var message = ProcessSms(rawMessage, contacts);
+               if (String.IsNullOrEmpty(rawMessage.Body))
+               {
+                  logger.Warn($"({rawMessage.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
+               }
+               ssmsMessages.Add(message.MessageId, message);
             }
             
             //Process media messages while the first batch is saving.
@@ -70,24 +67,21 @@ namespace MessageImport
             Dictionary<string, Message> mediaMessages = new Dictionary<string, Message>();
 
             AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
-            using (var mmsIterator = reader.getMmsIterator())
+            foreach (var rawMessage in reader.MultimediaMessages)
             {
-               while (mmsIterator.MoveNext())
+               if (rawMessage.Parts.Count == 0)
                {
-                  if (mmsIterator.Current.Parts.Count == 0)
-                  {
-                     logger.Warn($"({mmsIterator.Current.LineNumber}) Discarding MMS with blank body and no attachments. ID={mmsIterator.Current.MessageId}.");
-                     continue;
-                  }
-                  if (mediaMessages.ContainsKey(mmsIterator.Current.GetMessageId()))
-                  {
-                     logger.Warn($"({mmsIterator.Current.LineNumber}) Found duplicate multi-media message with id {mmsIterator.Current.GetMessageId()}.");
-                     continue;
-                  }
-
-                  var message = ProcessMms(contacts, attachments, mmsIterator.Current, repo);
-                  mediaMessages.Add(message.MessageId, message);
+                  logger.Warn($"({rawMessage.LineNumber}) Discarding MMS with blank body and no attachments. ID={rawMessage.MessageId}.");
+                  continue;
                }
+               if (mediaMessages.ContainsKey(rawMessage.GetMessageId()))
+               {
+                  logger.Warn($"({rawMessage.LineNumber}) Found duplicate multi-media message with id {rawMessage.GetMessageId()}.");
+                  continue;
+               }
+
+               var message = ProcessMms(contacts, attachments, rawMessage, repo);
+               mediaMessages.Add(message.MessageId, message);
             }
             ssmsInsert.Wait();//Connection can only have one action going at once. (I think)
             context.BulkInsert(mediaMessages.Values.ToList());

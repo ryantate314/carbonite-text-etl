@@ -8,13 +8,11 @@ namespace CarboniteXmlParser.Test
    {
 
       MessageReader reader;
-      SmsIterator iterator;
 
       [TestInitialize]
       public void Setup()
       {
          reader = new MessageReader("TestMessages.xml");
-         iterator = reader.getSmsIterator();
       }
 
      
