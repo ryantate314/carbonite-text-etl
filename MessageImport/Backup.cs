@@ -34,32 +34,29 @@ namespace MessageImport
 
       public void Run()
       {
-         using (MessageReader reader = new MessageReader(_filename))
          using (StagingContext context = new StagingContext())
          {
             context.Database.Log = m => logger.Info(m);
             context.USP_Truncate_Staging();
 
+            MessageReader reader = new MessageReader(_filename);
             List<MessageAddress> contacts = new List<MessageAddress>();
             Dictionary<string, Data.Staging.Message> ssmsMessages = new Dictionary<string, Data.Staging.Message>();
 
-            using (var smsIterator = reader.getSmsIterator())
+            foreach (var rawMessage in reader.TextMessages)
             {
-               while (smsIterator.MoveNext())
+               string messageId = rawMessage.GetMessageId();
+               if (ssmsMessages.ContainsKey(messageId))
                {
-                  string messageId = smsIterator.Current.GetMessageId();
-                  if (ssmsMessages.ContainsKey(messageId))
-                  {
-                     logger.Warn($"({smsIterator.Current.LineNumber}) Found duplicate messageID {messageId}.");
-                     continue;
-                  }
-                  var message = ProcessSms(smsIterator.Current, contacts);
-                  if (String.IsNullOrEmpty(message.Body))
-                  {
-                     logger.Warn($"({smsIterator.Current.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
-                  }
-                  ssmsMessages.Add(message.MessageId, message);
+                  logger.Warn($"({rawMessage.LineNumber}) Found duplicate messageID {messageId}.");
+                  continue;
                }
+               var message = ProcessSms(rawMessage, contacts);
+               if (String.IsNullOrEmpty(rawMessage.Body))
+               {
+                  logger.Warn($"({rawMessage.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
+               }
+               ssmsMessages.Add(message.MessageId, message);
             }
             
             //Process media messages while the first batch is saving.
@@ -70,24 +67,21 @@ namespace MessageImport
             Dictionary<string, Message> mediaMessages = new Dictionary<string, Message>();
 
             AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
-            using (var mmsIterator = reader.getMmsIterator())
+            foreach (var rawMessage in reader.MultimediaMessages)
             {
-               while (mmsIterator.MoveNext())
+               if (rawMessage.Parts.Count == 0)
                {
-                  if (mmsIterator.Current.Parts.Count == 0)
-                  {
-                     logger.Warn($"({mmsIterator.Current.LineNumber}) Discarding MMS with blank body and no attachments. ID={mmsIterator.Current.MessageId}.");
-                     continue;
-                  }
-                  if (mediaMessages.ContainsKey(mmsIterator.Current.GetMessageId()))
-                  {
-                     logger.Warn($"({mmsIterator.Current.LineNumber}) Found duplicate multi-media message with id {mmsIterator.Current.GetMessageId()}.");
-                     continue;
-                  }
-
-                  var message = ProcessMms(contacts, attachments, mmsIterator.Current, repo);
-                  mediaMessages.Add(message.MessageId, message);
+                  logger.Warn($"({rawMessage.LineNumber}) Discarding MMS with blank body and no attachments. ID={rawMessage.MessageId}.");
+                  continue;
                }
+               if (mediaMessages.ContainsKey(rawMessage.GetMessageId()))
+               {
+                  logger.Warn($"({rawMessage.LineNumber}) Found duplicate multi-media message with id {rawMessage.GetMessageId()}.");
+                  continue;
+               }
+
+               var message = ProcessMms(contacts, attachments, rawMessage, repo);
+               mediaMessages.Add(message.MessageId, message);
             }
             ssmsInsert.Wait();//Connection can only have one action going at once. (I think)
             context.BulkInsert(mediaMessages.Values.ToList());
@@ -99,6 +93,20 @@ namespace MessageImport
             var contactOptions = context.USP_Select_Contact_Options();
             var groupedContactOptions = contactOptions.GroupBy(o => o.Number, o => o.ContactName)
                                                       .ToDictionary(go => go.Key, go => go.ToList());
+            //Select a sample list of text messages for each contact
+            var sampleMessagesCache = (
+                                  from m in context.Messages
+                                  join ma in context.MessageAddresses on m.MessageId equals ma.MessageId
+                                  where groupedContactOptions.Keys.Contains(ma.Number)
+                                  select new { Number = ma.Number, Body = m.Body, SendDate = m.SendDate }
+                                  )
+                                  .GroupBy(x => x.Number)
+                                  .SelectMany(x => x.OrderBy(m => m.SendDate).Take(5))
+                                  .Select(x => new { Number = x.Number, Body = x.Body })
+                                  //.GroupBy(x => x.Number)
+                                  //.ToDictionary(...)
+                                  .ToList();
+
 
             //Using a data table because EF doesn't support table valued parameters
             DataTable dt = new DataTable();
@@ -110,14 +118,8 @@ namespace MessageImport
                string newName = entry.Value.FirstOrDefault();
                if (entry.Value.Count > 1 || String.IsNullOrEmpty(newName) || newName == DEFAULT_CONTACT_NAME)
                {
-                  //Select a sample list of text message
-                  var sampleMessages = (from m in context.Messages
-                                        join ma in context.MessageAddresses on m.MessageId equals ma.MessageId
-                                        where ma.Number == entry.Key
-                                        select m.Body
-                                        ).Take(5);
-                     
-                     //context.Messages.Join(Select(m => m.Body).Take(5);
+                  var sampleMessages = sampleMessagesCache.Where(m => m.Number == entry.Key);
+                  //context.Messages.Join(Select(m => m.Body).Take(5);
                   //Build a list of options for the user to choose from
                   Console.WriteLine($"Select an address for number {entry.Key}:");
                   for (int i = 0; i < entry.Value.Count; i++)
@@ -127,7 +129,7 @@ namespace MessageImport
                   Console.WriteLine("Type for Manual Entry");
                   foreach (var message in sampleMessages)
                   {
-                     Console.WriteLine(message.Substring(0, Math.Min(message.Length, Console.WindowWidth)));
+                     Console.WriteLine(message.Body.Substring(0, Math.Min(message.Body.Length, Console.WindowWidth)));
                   }
                   bool valid;
                   do
