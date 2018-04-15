@@ -83,6 +83,7 @@
     <Compile Include="XmlEntities\Mms.cs" />
     <Compile Include="XmlEntities\Sms.cs" />
     <Compile Include="XmlEntities\XmlUtilities.cs" />
+    <Compile Include="XmlReaderFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

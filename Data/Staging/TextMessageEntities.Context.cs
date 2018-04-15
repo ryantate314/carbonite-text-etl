@@ -33,9 +33,13 @@ namespace Data.Staging
         public virtual DbSet<Attachment> Attachments { get; set; }
         public virtual DbSet<MessageAddress> MessageAddresses { get; set; }
     
-        public virtual int USP_Merge()
+        public virtual int USP_Merge(Nullable<System.DateTime> backupDate)
         {
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("USP_Merge");
+            var backupDateParameter = backupDate.HasValue ?
+                new ObjectParameter("backupDate", backupDate) :
+                new ObjectParameter("backupDate", typeof(System.DateTime));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("USP_Merge", backupDateParameter);
         }
     
         public virtual int USP_Truncate_Staging()

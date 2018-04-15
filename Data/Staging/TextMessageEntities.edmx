@@ -35,7 +35,9 @@
           <Property Name="ContactName" Type="varchar" MaxLength="64" />
           <Property Name="Direction" Type="tinyint" Nullable="false" />
         </EntityType>
-        <Function Name="USP_Merge" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo" />
+        <Function Name="USP_Merge" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="backupDate" Type="datetime" Mode="In" />
+        </Function>
         <Function Name="USP_Select_Contact_Options" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="Staging" />
         <Function Name="USP_Truncate_Staging" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="Staging" />
         <EntityContainer Name="TextMessagesModelStoreContainer">
@@ -70,7 +72,9 @@
         <EntityContainer Name="StagingContext" annotation:LazyLoadingEnabled="false">
           <EntitySet Name="Messages" EntityType="Self.Message" />
           <EntitySet Name="Attachments" EntityType="Self.Attachment" />
-          <FunctionImport Name="USP_Merge" />
+          <FunctionImport Name="USP_Merge" >
+            <Parameter Name="backupDate" Mode="In" Type="DateTime" />
+          </FunctionImport>
           <FunctionImport Name="USP_Truncate_Staging" />
           <EntitySet Name="MessageAddresses" EntityType="TextMessagesModel.MessageAddress" />
           <FunctionImport Name="USP_Select_Contact_Options" ReturnType="Collection(TextMessagesModel.USP_Select_Contact_Options_Result)" />

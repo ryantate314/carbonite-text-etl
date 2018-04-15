@@ -79,6 +79,10 @@ namespace MessageImport
                   logger.Warn($"({rawMessage.LineNumber}) Found duplicate multi-media message with id {rawMessage.GetMessageId()}.");
                   continue;
                }
+               if (rawMessage.GetMessageId() == "02894BED69A7000012300003")
+               {
+
+               }
 
                var message = ProcessMms(contacts, attachments, rawMessage, repo);
                mediaMessages.Add(message.MessageId, message);
@@ -98,6 +102,7 @@ namespace MessageImport
                                   from m in context.Messages
                                   join ma in context.MessageAddresses on m.MessageId equals ma.MessageId
                                   where groupedContactOptions.Keys.Contains(ma.Number)
+                                        && ma.Direction == (byte)AddressDirection.From //Prevents MMS confusion
                                   select new { Number = ma.Number, Body = m.Body, SendDate = m.SendDate }
                                   )
                                   .GroupBy(x => x.Number)
@@ -174,7 +179,7 @@ namespace MessageImport
             string command = "EXEC Staging.USP_Update_Contacts @contactInfo";
             context.Database.ExecuteSqlCommand(command, param);
             
-            context.USP_Merge();
+            context.USP_Merge(reader.BackupDate);
          }
       }
 
@@ -219,6 +224,7 @@ namespace MessageImport
          };
          logger.Info("Processing MMS from line " + message.LineNumber);
          StringBuilder bodyBuilder = new StringBuilder();//lol
+         List<Attachment> messageAttachments = new List<Attachment>();
          foreach (var attachment in message.Parts)
          {
             if (attachment.MimeType == "text/plain")
@@ -228,9 +234,14 @@ namespace MessageImport
             else if (attachment.MimeType != "application/smil")
             {
                Attachment objAttachment = fileRepo.SaveAttachmentAsync(objMessage, attachment).Result;
-               attachments.Add(objAttachment);
+               //Ignore duplicate attachments.
+               if (!messageAttachments.Any(x => x.Path == objAttachment.Path))
+               {
+                  messageAttachments.Add(objAttachment);
+               }
             }
          }
+         attachments.AddRange(messageAttachments.Distinct());
          //if (objMessage.MessageType == MessageType.Received)
          //{
          //   //TODO split inline contact name by ~
