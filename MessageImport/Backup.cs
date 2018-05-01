@@ -34,153 +34,129 @@ namespace MessageImport
 
       public void Run()
       {
-         using (StagingContext context = new StagingContext())
+         StagingContext context = new StagingContext();
+         context.TruncateStaging();
+
+         MessageReader reader = new MessageReader(_filename);
+         List<MessageAddress> contacts = new List<MessageAddress>();
+         Dictionary<string, Data.Staging.Message> ssmsMessages = new Dictionary<string, Data.Staging.Message>();
+
+         foreach (var rawMessage in reader.TextMessages)
          {
-            context.Database.Log = m => logger.Info(m);
-            context.USP_Truncate_Staging();
-
-            MessageReader reader = new MessageReader(_filename);
-            List<MessageAddress> contacts = new List<MessageAddress>();
-            Dictionary<string, Data.Staging.Message> ssmsMessages = new Dictionary<string, Data.Staging.Message>();
-
-            foreach (var rawMessage in reader.TextMessages)
+            string messageId = rawMessage.GetMessageId();
+            if (ssmsMessages.ContainsKey(messageId))
             {
-               string messageId = rawMessage.GetMessageId();
-               if (ssmsMessages.ContainsKey(messageId))
-               {
-                  logger.Warn($"({rawMessage.LineNumber}) Found duplicate messageID {messageId}.");
-                  continue;
-               }
-               var message = ProcessSms(rawMessage, contacts);
-               if (String.IsNullOrEmpty(rawMessage.Body))
-               {
-                  logger.Warn($"({rawMessage.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
-               }
-               ssmsMessages.Add(message.MessageId, message);
+               logger.Warn($"({rawMessage.LineNumber}) Found duplicate messageID {messageId}.");
+               continue;
             }
-            
-            //Process media messages while the first batch is saving.
-            Task ssmsInsert = context.BulkInsertAsync(ssmsMessages.Values.ToList());
-            ssmsMessages = null;//Attempt to garbage collect
-            List<Attachment> attachments = new List<Attachment>();
-
-            Dictionary<string, Message> mediaMessages = new Dictionary<string, Message>();
-
-            AttachmentRepository repo = new AttachmentRepository(_mediaFolder);
-            foreach (var rawMessage in reader.MultimediaMessages)
+            var message = ProcessSms(rawMessage, contacts);
+            if (String.IsNullOrEmpty(rawMessage.Body))
             {
-               if (rawMessage.Parts.Count == 0)
-               {
-                  logger.Warn($"({rawMessage.LineNumber}) Discarding MMS with blank body and no attachments. ID={rawMessage.MessageId}.");
-                  continue;
-               }
-               if (mediaMessages.ContainsKey(rawMessage.GetMessageId()))
-               {
-                  logger.Warn($"({rawMessage.LineNumber}) Found duplicate multi-media message with id {rawMessage.GetMessageId()}.");
-                  continue;
-               }
-               if (rawMessage.GetMessageId() == "02894BED69A7000012300003")
-               {
-
-               }
-
-               var message = ProcessMms(contacts, attachments, rawMessage, repo);
-               mediaMessages.Add(message.MessageId, message);
+               logger.Warn($"({rawMessage.LineNumber}) Found SMS with blank body sent on {message.SendDate}.");
             }
-            ssmsInsert.Wait();//Connection can only have one action going at once. (I think)
-            context.BulkInsert(mediaMessages.Values.ToList());
-            context.BulkInsert(attachments);
-            context.BulkInsert(contacts);
+            ssmsMessages.Add(message.MessageId, message);
+         }
 
-            //TODO refactor contact option logic
-            //Group MessageAddresses by number and show a list of possible contact name
-            var contactOptions = context.USP_Select_Contact_Options();
-            var groupedContactOptions = contactOptions.GroupBy(o => o.Number, o => o.ContactName)
-                                                      .ToDictionary(go => go.Key, go => go.ToList());
-            //Select a sample list of text messages for each contact
-            var sampleMessagesCache = (
-                                  from m in context.Messages
-                                  join ma in context.MessageAddresses on m.MessageId equals ma.MessageId
-                                  where groupedContactOptions.Keys.Contains(ma.Number)
-                                        && ma.Direction == (byte)AddressDirection.From //Prevents MMS confusion
-                                  select new { Number = ma.Number, Body = m.Body, SendDate = m.SendDate }
-                                  )
-                                  .GroupBy(x => x.Number)
-                                  .SelectMany(x => x.OrderBy(m => m.SendDate).Take(5))
-                                  .Select(x => new { Number = x.Number, Body = x.Body })
-                                  //.GroupBy(x => x.Number)
-                                  //.ToDictionary(...)
-                                  .ToList();
+         context.Messages.BulkAddMessages(ssmsMessages.Values.ToList());
+         ssmsMessages = null;//Attempt to garbage collect
+         List<Attachment> attachments = new List<Attachment>();
 
+         Dictionary<string, Message> mediaMessages = new Dictionary<string, Message>();
 
-            //Using a data table because EF doesn't support table valued parameters
-            DataTable dt = new DataTable();
-            dt.Columns.Add("Number", typeof(string));
-            dt.Columns.Add("NewName", typeof(string));
-            
-            foreach (KeyValuePair<string, List<string>> entry in groupedContactOptions)
+         AttachmentFileRepository repo = new AttachmentFileRepository(_mediaFolder);
+         foreach (var rawMessage in reader.MultimediaMessages)
+         {
+            if (rawMessage.Parts.Count == 0)
             {
-               string newName = entry.Value.FirstOrDefault();
-               if (entry.Value.Count > 1 || String.IsNullOrEmpty(newName) || newName == DEFAULT_CONTACT_NAME)
+               logger.Warn($"({rawMessage.LineNumber}) Discarding MMS with blank body and no attachments. ID={rawMessage.MessageId}.");
+               continue;
+            }
+            if (mediaMessages.ContainsKey(rawMessage.GetMessageId()))
+            {
+               logger.Warn($"({rawMessage.LineNumber}) Found duplicate multi-media message with id {rawMessage.GetMessageId()}.");
+               continue;
+            }
+
+            var message = ProcessMms(contacts, attachments, rawMessage, repo);
+            mediaMessages.Add(message.MessageId, message);
+         }
+         context.Messages.BulkAddMessages(mediaMessages.Values.ToList());
+         context.Attachments.BulkAddAttachments(attachments);
+         context.Contacts.BulkAddContacts(contacts);
+
+         //TODO refactor contact option logic
+         //Group MessageAddresses by number and show a list of possible contact name
+         Dictionary<string, List<string>> groupedContactOptions = context.Contacts.GetContactOptions();
+         //Select a sample list of text messages for each contact
+         var sampleMessagesCache = context.Messages.GetSampleMessages(groupedContactOptions.Keys.ToList());
+
+
+         //Using a data table because EF doesn't support table valued parameters
+         List<ContactUpdate> updatedContacts = new List<ContactUpdate>();
+
+         foreach (KeyValuePair<string, List<string>> entry in groupedContactOptions)
+         {
+            string newName = entry.Value.FirstOrDefault();
+            if (entry.Value.Count > 1 || String.IsNullOrEmpty(newName) || newName == DEFAULT_CONTACT_NAME)
+            {
+               var sampleMessages = sampleMessagesCache.Where(m => m.Number == entry.Key);
+               //context.Messages.Join(Select(m => m.Body).Take(5);
+               //Build a list of options for the user to choose from
+               Console.WriteLine($"Select an address for number {entry.Key}:");
+               for (int i = 0; i < entry.Value.Count; i++)
                {
-                  var sampleMessages = sampleMessagesCache.Where(m => m.Number == entry.Key);
-                  //context.Messages.Join(Select(m => m.Body).Take(5);
-                  //Build a list of options for the user to choose from
-                  Console.WriteLine($"Select an address for number {entry.Key}:");
-                  for (int i = 0; i < entry.Value.Count; i++)
+                  Console.Write($"({i + 1}) {entry.Value[i]}, ");
+               }
+               Console.WriteLine("Type for Manual Entry");
+               foreach (var message in sampleMessages)
+               {
+                  Console.WriteLine(message.Body.Substring(0, Math.Min(message.Body.Length, Console.WindowWidth)));
+               }
+               bool valid;
+               do
+               {
+                  valid = true;//Default true so leaving blank sets the default
+                  Console.Write("(1): ");//Communicate default of 1
+                                         //Read user response
+                  string response = Console.ReadLine();
+                  if (!String.IsNullOrEmpty(response))
                   {
-                     Console.Write($"({i + 1}) {entry.Value[i]}, ");
-                  }
-                  Console.WriteLine("Type for Manual Entry");
-                  foreach (var message in sampleMessages)
-                  {
-                     Console.WriteLine(message.Body.Substring(0, Math.Min(message.Body.Length, Console.WindowWidth)));
-                  }
-                  bool valid;
-                  do
-                  {
-                     valid = true;//Default true so leaving blank sets the default
-                     Console.Write("(1): ");//Communicate default of 1
-                     //Read user response
-                     string response = Console.ReadLine();
-                     if (!String.IsNullOrEmpty(response))
+                     int option = -1;
+                     if (Int32.TryParse(response, out option))
                      {
-                        int option = -1;
-                        if (Int32.TryParse(response, out option))
+                        option--;//Convert to 0-index.
+                                 //The user selected an option rather than typing one
+                        if (option >= 0 && option < entry.Value.Count)
                         {
-                           option--;//Convert to 0-index.
-                           //The user selected an option rather than typing one
-                           if (option >= 0 && option < entry.Value.Count)
-                           {
-                              newName = entry.Value[option];
-                           }
-                           else
-                           {
-                              Console.WriteLine("Invalid option.");
-                              valid = false;
-                           }
-                        }//End If response is an integer
+                           newName = entry.Value[option];
+                        }
                         else
                         {
-                           //Override
-                           newName = response;
+                           Console.WriteLine("Invalid option.");
+                           valid = false;
                         }
-                     }//End If null or empty
-                  } while (!valid);
-               }//End if more than one option
+                     }//End If response is an integer
+                     else
+                     {
+                        //TODO allow 'd' to delete all messages
+                        //Override
+                        newName = response;
+                     }
+                  }//End If null or empty
+               } while (!valid);
+            }//End if more than one option
 
-               dt.Rows.Add(entry.Key, newName);
+            updatedContacts.Add(new ContactUpdate()
+            {
+               NewName = newName,
+               Number = entry.Key
+            });
 
-            }//End foreach contact
+         }//End foreach contact
 
-            var param = new SqlParameter("contactInfo", SqlDbType.Structured);
-            param.Value = dt;
-            param.TypeName = "dbo.ContactInfo";
-            string command = "EXEC Staging.USP_Update_Contacts @contactInfo";
-            context.Database.ExecuteSqlCommand(command, param);
-            
-            context.USP_Merge(reader.BackupDate);
-         }
+         context.Contacts.UpdateContacts(updatedContacts);
+
+         context.MergeStaging(reader.BackupDate);
       }
 
       private Message ProcessSms(CarboniteXmlParser.XmlEntities.Sms sms, List<MessageAddress> contacts)
@@ -213,7 +189,7 @@ namespace MessageImport
       }
 
 
-      private Message ProcessMms(List<MessageAddress> contacts, List<Attachment> attachments, CarboniteXmlParser.XmlEntities.Mms message, AttachmentRepository fileRepo)
+      private Message ProcessMms(List<MessageAddress> contacts, List<Attachment> attachments, CarboniteXmlParser.XmlEntities.Mms message, AttachmentFileRepository fileRepo)
       {
          Message objMessage = new Message()
          {
