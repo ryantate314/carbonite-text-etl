@@ -84,80 +84,94 @@ namespace MessageImport
          context.Attachments.BulkAddAttachments(attachments);
          context.Contacts.BulkAddContacts(contacts);
 
-         //TODO refactor contact option logic
-         //Group MessageAddresses by number and show a list of possible contact name
-         Dictionary<string, List<string>> groupedContactOptions = context.Contacts.GetContactOptions();
-         //Select a sample list of text messages for each contact
-         var sampleMessagesCache = context.Messages.GetSampleMessages(groupedContactOptions.Keys.ToList());
-
-
-         //Using a data table because EF doesn't support table valued parameters
-         List<ContactUpdate> updatedContacts = new List<ContactUpdate>();
-
-         foreach (KeyValuePair<string, List<string>> entry in groupedContactOptions)
-         {
-            string newName = entry.Value.FirstOrDefault();
-            if (entry.Value.Count > 1 || String.IsNullOrEmpty(newName) || newName == DEFAULT_CONTACT_NAME)
-            {
-               var sampleMessages = sampleMessagesCache.Where(m => m.Number == entry.Key);
-               //context.Messages.Join(Select(m => m.Body).Take(5);
-               //Build a list of options for the user to choose from
-               Console.WriteLine($"Select an address for number {entry.Key}:");
-               for (int i = 0; i < entry.Value.Count; i++)
-               {
-                  Console.Write($"({i + 1}) {entry.Value[i]}, ");
-               }
-               Console.WriteLine("Type for Manual Entry");
-               foreach (var message in sampleMessages)
-               {
-                  Console.WriteLine(message.Body.Substring(0, Math.Min(message.Body.Length, Console.WindowWidth)));
-               }
-               bool valid;
-               do
-               {
-                  valid = true;//Default true so leaving blank sets the default
-                  Console.Write("(1): ");//Communicate default of 1
-                                         //Read user response
-                  string response = Console.ReadLine();
-                  if (!String.IsNullOrEmpty(response))
-                  {
-                     int option = -1;
-                     if (Int32.TryParse(response, out option))
-                     {
-                        option--;//Convert to 0-index.
-                                 //The user selected an option rather than typing one
-                        if (option >= 0 && option < entry.Value.Count)
-                        {
-                           newName = entry.Value[option];
-                        }
-                        else
-                        {
-                           Console.WriteLine("Invalid option.");
-                           valid = false;
-                        }
-                     }//End If response is an integer
-                     else
-                     {
-                        //TODO allow 'd' to delete all messages
-                        //Override
-                        newName = response;
-                     }
-                  }//End If null or empty
-               } while (!valid);
-            }//End if more than one option
-
-            updatedContacts.Add(new ContactUpdate()
-            {
-               NewName = newName,
-               Number = entry.Key
-            });
-
-         }//End foreach contact
-
-         context.Contacts.UpdateContacts(updatedContacts);
+		 Console.Write("Would you like to disambiguate contacts (Yn)? ");
+		 string disambiguateResponse = Console.ReadLine();
+		 if (disambiguateResponse.ToLower() != "n")
+		 {
+			DisambiguateContacts(context);
+		 }
 
          context.MergeStaging(reader.BackupDate);
       }
+
+	  /// <summary>
+	  /// Prompts the user for a decision on the correct name for each number with multiple or missing contact names.
+	  /// </summary>
+	  /// <param name="context"></param>
+	  private static void DisambiguateContacts(StagingContext context)
+	  {
+		 //TODO refactor contact option logic
+		 //Group MessageAddresses by number and show a list of possible contact name
+		 Dictionary<string, List<string>> groupedContactOptions = context.Contacts.GetContactOptions();
+		 //Select a sample list of text messages for each contact
+		 var sampleMessagesCache = context.Messages.GetSampleMessages(groupedContactOptions.Keys.ToList());
+
+
+		 //Using a data table because EF doesn't support table valued parameters
+		 List<ContactUpdate> updatedContacts = new List<ContactUpdate>();
+
+		 foreach (KeyValuePair<string, List<string>> entry in groupedContactOptions)
+		 {
+			string newName = entry.Value.FirstOrDefault();
+			if (entry.Value.Count > 1 || String.IsNullOrEmpty(newName) || newName == DEFAULT_CONTACT_NAME)
+			{
+			   var sampleMessages = sampleMessagesCache.Where(m => m.Number == entry.Key);
+			   //context.Messages.Join(Select(m => m.Body).Take(5);
+			   //Build a list of options for the user to choose from
+			   Console.WriteLine($"Select an address for number {entry.Key}:");
+			   for (int i = 0; i < entry.Value.Count; i++)
+			   {
+				  Console.Write($"({i + 1}) {entry.Value[i]}, ");
+			   }
+			   Console.WriteLine("Type for Manual Entry");
+			   foreach (var message in sampleMessages)
+			   {
+				  Console.WriteLine(message.Body.Substring(0, Math.Min(message.Body.Length, Console.WindowWidth)));
+			   }
+			   bool valid;
+			   do
+			   {
+				  valid = true;//Default true so leaving blank sets the default
+				  Console.Write("(1): ");//Communicate default of 1
+										 //Read user response
+				  string response = Console.ReadLine();
+				  if (!String.IsNullOrEmpty(response))
+				  {
+					 int option = -1;
+					 if (Int32.TryParse(response, out option))
+					 {
+						option--;//Convert to 0-index.
+								 //The user selected an option rather than typing one
+						if (option >= 0 && option < entry.Value.Count)
+						{
+						   newName = entry.Value[option];
+						}
+						else
+						{
+						   Console.WriteLine("Invalid option.");
+						   valid = false;
+						}
+					 }//End If response is an integer
+					 else
+					 {
+						//TODO allow 'd' to delete all messages
+						//Override
+						newName = response;
+					 }
+				  }//End If null or empty
+			   } while (!valid);
+			}//End if more than one option
+
+			updatedContacts.Add(new ContactUpdate()
+			{
+			   NewName = newName,
+			   Number = entry.Key
+			});
+
+		 }//End foreach contact
+
+		 context.Contacts.UpdateContacts(updatedContacts);
+	  }
 
       private Message ProcessSms(CarboniteXmlParser.XmlEntities.Sms sms, List<MessageAddress> contacts)
       {
