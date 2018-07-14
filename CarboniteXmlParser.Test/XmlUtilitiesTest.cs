@@ -20,6 +20,12 @@ namespace CarboniteXmlParser.Test
          DateTime date = XmlUtilities.ParseTimestamp(epoch);
          Console.WriteLine(date.ToString());
          Assert.AreEqual(new DateTime(2013, 6, 19, 17, 24, 7, 376), date);
+
+
+         epoch = 1523809124649L;
+         date = XmlUtilities.ParseTimestamp(epoch);
+         Console.WriteLine(date.ToString());
+         Assert.AreEqual(new DateTime(2018, 4, 15, 16, 18, 44, 649), date);
       }
    }
 }

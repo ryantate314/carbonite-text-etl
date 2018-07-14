@@ -9,6 +9,8 @@ namespace CarboniteXmlParser.Android
    public enum AddressType
    {
       From = 0x89,
-      To = 0x97
+      To = 0x97,
+      CC = 0x82,
+      BCC = 0x81
    }
 }

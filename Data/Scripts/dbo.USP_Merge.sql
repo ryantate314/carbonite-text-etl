@@ -1,10 +1,7 @@
 USE [textMessages]
 GO
-
-/****** Object:  StoredProcedure [dbo].[USP_Merge]    Script Date: 1/5/2018 8:54:56 AM ******/
 SET ANSI_NULLS ON
 GO
-
 SET QUOTED_IDENTIFIER ON
 GO
 
@@ -13,12 +10,16 @@ GO
 -- Author:		Ryan Tate
 -- Create date: 2018/01/02
 -- Description:	Merges messages from the staging tables into the main message store.
+--
+-- Mod History
+-- Date			ID		Change
+-- 2018/05/08	!1		Modified to match Conversation layout of stock application.
+-- 2018/04/13	!2		Add Send Date update for message merging
 -- =============================================
-CREATE PROCEDURE [dbo].[USP_Merge]
+ALTER PROCEDURE [dbo].[USP_Merge]
+	@backupDate datetime
 AS
 BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
 	SET NOCOUNT ON;
 
 	DECLARE @backupKey int;
@@ -30,12 +31,12 @@ BEGIN
 
 	-- Create backup entry
 	INSERT INTO dbo.[Backup]
-		(BatchDate)
-		VALUES (CURRENT_TIMESTAMP);
+		(BackupDate, MergeDate)
+		VALUES (@backupDate, CURRENT_TIMESTAMP);
 	SET @backupKey = scope_identity();
 
 	-- Merge Contacts
-	;WITH NewAddresses (Number, ContactName)
+	WITH NewAddresses (Number, ContactName)
 	AS
 	(
 		SELECT DISTINCT Number, ContactName
@@ -47,10 +48,11 @@ BEGIN
 		WHEN NOT MATCHED BY TARGET THEN
 			INSERT (Number, ContactName)
 			VALUES (NA.Number, NA.ContactName)
-	;
+		WHEN MATCHED
+			THEN UPDATE SET A.ContactName = NA.ContactName;
 
 	--Merge Messages
-	;WITH NewMessages
+	WITH NewMessages
 	AS
 	(
 		SELECT MessageId, SendDate, Body, MessageType, [Status]
@@ -62,17 +64,19 @@ BEGIN
 		WHEN NOT MATCHED BY TARGET THEN
 			INSERT (MessageId, SendDate, Body, MessageType, [Status], BackupKey)
 			VALUES (NM.MessageId, NM.SendDate, NM.Body, NM.MessageType, NM.[Status], @backupKey)
+		--WHEN MATCHED THEN --!2
+			--UPDATE SET SendDate = NM.SendDate
 	;
 
 	--Link contacts to Messages. Only create joins for TO addresses.
-	INSERT INTO dbo.MessageAddress
-	SELECT PM.[Key] MessageKey, PA.[Key] AddressKey
-		FROM Staging.MessageAddress SMA
-			JOIN dbo.[Address] PA ON SMA.Number = PA.Number --Convert number to address key
-			JOIN dbo.[Message] PM ON SMA.MessageId = PM.MessageId --Convert MessageId to message key
-		WHERE SMA.Direction = @toDirection
-			AND PM.BackupKey = @backupKey --Only include new messages
-	;
+	--INSERT INTO dbo.MessageAddress
+	--SELECT PM.[Key] MessageKey, PA.[Key] AddressKey
+	--	FROM Staging.MessageAddress SMA
+	--		JOIN dbo.[Address] PA ON SMA.Number = PA.Number --Convert number to address key
+	--		JOIN dbo.[Message] PM ON SMA.MessageId = PM.MessageId --Convert MessageId to message key
+	--	WHERE SMA.Direction = @toDirection
+	--		AND PM.BackupKey = @backupKey --Only include new messages
+	--;
 
 	--Link message FROM contacts.
 	UPDATE PM
@@ -84,16 +88,68 @@ BEGIN
 		AND PM.BackupKey = @backupKey --Only include new messages
 	;
 
+	--Group into conversations
+	--Create Conversation entries
+	INSERT INTO dbo.Conversation (ComputedKey)
+		SELECT DISTINCT ParticipantHash
+		FROM Staging.vw_Conversations SC
+		LEFT JOIN dbo.Conversation C ON SC.ParticipantHash = C.ComputedKey
+		WHERE C.[Key] IS NULL
+	;
+
+	--Link messages to conversations
+	UPDATE M
+		SET M.ConversationKey = C.[Key]
+		FROM dbo.Message M
+		JOIN Staging.vw_Conversations SC ON M.MessageId = SC.MessageId
+		JOIN dbo.Conversation C ON SC.ParticipantHash = C.ComputedKey;
+
+	--Link conversations to contacts
+	WITH SampleMessages
+	AS
+	(
+		--Select one message per conversation
+		SELECT
+			  M.ConversationKey
+			, M.MessageId
+		FROM
+		(
+			SELECT    
+				  C.[Key] ConversationKey
+				, M.MessageId
+				, ROW_NUMBER() OVER (Partition BY C.[Key]
+					ORDER BY M.SendDate DESC) AS rk
+			FROM dbo.Message M
+				JOIN dbo.Conversation C ON M.ConversationKey = C.[Key]
+		) AS M
+		WHERE rk = 1
+	),
+	ConversationAddresses AS
+	(
+		SELECT
+			    Samples.ConversationKey
+			  , A.[Key] AddressKey
+		FROM SampleMessages Samples
+		JOIN dbo.Message M ON Samples.MessageId = M.MessageId
+		JOIN Staging.Message SM ON SM.MessageId = M.MessageId
+		JOIN Staging.MessageAddress MA ON M.MessageId = MA.MessageId
+		JOIN dbo.Address A ON MA.Number = A.Number
+	)
+	MERGE INTO dbo.ConversationAddress T
+		USING ConversationAddresses CA
+		ON T.ConversationKey = CA.ConversationKey AND T.AddressKey = CA.AddressKey
+		WHEN NOT MATCHED BY TARGET 
+			THEN INSERT (ConversationKey, AddressKey)
+			VALUES (CA.ConversationKey, CA.AddressKey);
+
 	-- Merge Attachments
 	INSERT INTO dbo.Attachment
 		SELECT SA.[FileName], SA.[Path], SA.MimeType, PM.[Key] MessageKey
 		FROM Staging.Attachment SA
 			JOIN dbo.[Message] PM ON SA.MessageId = PM.MessageId --Get message key
 			LEFT JOIN dbo.[Attachment] PA ON PM.[Key] = PA.MessageKey
-			WHERE PM.BackupKey = @backupKey --Only include new attachments
+		WHERE PM.BackupKey = @backupKey --Only include new attachments
 	;
     
 	COMMIT TRANSACTION;
 END
-GO
-

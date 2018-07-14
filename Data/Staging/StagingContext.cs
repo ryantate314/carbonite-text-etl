@@ -41,7 +41,10 @@ namespace Data.Staging
       {
          using (var con = new SqlConnection(_connectionString))
          {
-            con.Execute("dbo.usp_Merge", new { backupDate = backupDate }, commandType: System.Data.CommandType.StoredProcedure);
+            con.Execute("dbo.usp_Merge"
+                , new { backupDate = backupDate }
+                , commandType: System.Data.CommandType.StoredProcedure
+                , commandTimeout: 600);
          }
       }
 
