@@ -9,6 +9,7 @@ using Data;
 using Data.Staging;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text.RegularExpressions;
 
 namespace MessageImport
 {
@@ -322,24 +323,7 @@ namespace MessageImport
 
         private string SanitizeNumber(string address)
         {
-            if (!String.IsNullOrEmpty(address))
-            {
-                if (address.Length == 12)
-                {
-                    //Remove leading +1
-                    address = address.Substring(2);
-                }
-                else if (address.Length == 11)
-                {
-                    //Remove leading 1
-                    address = address.Substring(1);
-                }
-            }
-            else
-            {
-                address = DEFAULT_CONTACT_NAME;
-            }
-            return address;
+            return BackupUtils.SanitizePhoneNumber(address) ?? address;
         }
 
         private string SanitizeContactName(string name)
