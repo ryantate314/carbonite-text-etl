@@ -10,6 +10,7 @@ using Data.Staging;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 namespace MessageImport
 {
@@ -97,6 +98,13 @@ namespace MessageImport
             context.MergeStaging(reader.BackupDate);
         }
 
+        private static bool CompareLists<T>(IEnumerable<T> a, IEnumerable<T> b)
+        {
+            var ina = a.Except(b);
+            var inb = b.Except(a);
+            return !ina.Any() && !inb.Any();
+        }
+
         /// <summary>
         /// Prompts the user for a decision on the correct name for each number with multiple or missing contact names.
         /// </summary>
@@ -178,12 +186,14 @@ namespace MessageImport
 
         private Message ProcessSms(CarboniteXmlParser.XmlEntities.Sms sms, List<MessageAddress> contacts)
         {
+            var sanitizedAddress = SanitizeNumber(sms.Address);
             Message message = new Message()
             {
                 Body = sms.Body,
                 SendDate = sms.Date,
                 MessageType = ConvertMessageType(sms.MessageType),
-                MessageId = sms.GetMessageId()
+                MessageId = sms.GetMessageId(),
+                ConversationId = GetConversationHash(new string[] { sanitizedAddress })
                 //TODO handle status
             };
             logger.Info("Processing SMS from line " + sms.LineNumber);
@@ -203,6 +213,26 @@ namespace MessageImport
             };
 
             return ma;
+        }
+
+        private string GetConversationHash(IEnumerable<string> phoneNumbers)
+        {
+            if (phoneNumbers == null || !phoneNumbers.Any())
+            {
+                return null;
+            }
+
+            string list = String.Join(",", phoneNumbers.OrderBy(x => x));
+            using (var md5 = MD5.Create())
+            {
+                byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(list));
+                var builder = new StringBuilder(hash.Length * 2);
+                foreach (byte b in hash)
+                {
+                    builder.AppendFormat("{0:x2}", b);
+                }
+                return builder.ToString();
+            }
         }
 
 
@@ -246,6 +276,7 @@ namespace MessageImport
             //}
             //Process the list of addresses in the mms conversation.
             //All contacts in the list only contain numbers, not contact names
+            List<MessageAddress> messageContacts = new List<MessageAddress>();
             foreach (var address in message.Addresses)
             {
                 string contactName = String.Empty;
@@ -260,10 +291,13 @@ namespace MessageImport
                 //Perform after BuildMessageAddress in order to sanitize the phone number before comparing
                 if (ma.Number != MY_PHONE_NUMBER)
                 {
-                    contacts.Add(ma);
+                    messageContacts.Add(ma);
                 }
             }
             objMessage.Body = bodyBuilder.ToString().TrimEnd(new char[] { '\n', ' ' });
+
+            objMessage.ConversationId = GetConversationHash(messageContacts.Select(x => x.Number));
+
             return objMessage;
         }
 

@@ -46,7 +46,7 @@ namespace Data
 
       private string _getFullPath(string shortPath)
       {
-         return _directory + shortPath;
+         return Path.Combine(_directory, shortPath);
       }
 
       //private bool sameFile(string path, byte[] newContents)

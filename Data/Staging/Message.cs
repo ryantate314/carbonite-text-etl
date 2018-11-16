@@ -19,5 +19,6 @@ namespace Data.Staging
         public string Body { get; set; }
         public MessageType MessageType { get; set; }
         public byte Status { get; set; }
+        public string ConversationId { get; set; }
     }
 }

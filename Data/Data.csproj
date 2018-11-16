@@ -84,6 +84,7 @@
     <Compile Include="Staging\Attachment.cs">
     </Compile>
     <Compile Include="Staging\ContactUpdate.cs" />
+    <Compile Include="Staging\Conversation.cs" />
     <Compile Include="Staging\Message.cs">
     </Compile>
     <Compile Include="Staging\MessageAddress.cs">
