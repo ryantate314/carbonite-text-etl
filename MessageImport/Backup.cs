@@ -95,6 +95,8 @@ namespace MessageImport
                 DisambiguateContacts(context);
             }
 
+            Console.WriteLine("Merging staging environment...");
+
             context.MergeStaging(reader.BackupDate);
         }
 
@@ -117,8 +119,6 @@ namespace MessageImport
             //Select a sample list of text messages for each contact
             var sampleMessagesCache = context.Messages.GetSampleMessages(groupedContactOptions.Keys.ToList());
 
-
-            //Using a data table because EF doesn't support table valued parameters
             List<ContactUpdate> updatedContacts = new List<ContactUpdate>();
 
             foreach (KeyValuePair<string, List<string>> entry in groupedContactOptions)
@@ -166,13 +166,14 @@ namespace MessageImport
                             else
                             {
                                 //TODO allow 'd' to delete all messages
-                                //Override
+                                //Manual override by typing in a contact name
                                 newName = response;
                             }
                         }//End If null or empty
                     } while (!valid);
                 }//End if more than one option
 
+                //Add all to update so missing contact names are automatically filled in by production names
                 updatedContacts.Add(new ContactUpdate()
                 {
                     NewName = newName,
@@ -279,12 +280,21 @@ namespace MessageImport
             List<MessageAddress> messageContacts = new List<MessageAddress>();
             foreach (var address in message.Addresses)
             {
+                //The message.Address attribute sometimes contains the *from* phone number. If so, we can glean the contact name from the message.ContactName attribute
                 string contactName = String.Empty;
-                if (!String.IsNullOrEmpty(message.Address) && message.Address.Equals(address.Number))
+                if (!String.IsNullOrEmpty(address.Number) && address.Number.Equals(message.Address))
                 {
                     contactName = message.ContactName;
                 }
-                MessageAddress ma = BuildMessageAddress(contactName, address.Number, AddressTypeToAddressDirection(address.Type), message.GetMessageId());
+
+                //Fill in address placeholder
+                string parsedAddress = address.Number;
+                if (parsedAddress == "insert-address-token")
+                {
+                    parsedAddress = MY_PHONE_NUMBER;
+                }
+
+                MessageAddress ma = BuildMessageAddress(contactName, parsedAddress, AddressTypeToAddressDirection(address.Type), message.GetMessageId());
 
                 //Do not include me in the contact lists. It creates different conversations for MMS messages.
                 //It can be assumed that I am a part of any message in here.

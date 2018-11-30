@@ -32,12 +32,17 @@ namespace Data
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>A dictionary mapping a phone number to possible contact names.</returns>
         public Dictionary<string, List<string>> GetContactOptions()
         {
             using (var con = new SqlConnection(_connectionString))
             {
                 con.Open();
                 var options = con.Query<USP_Select_Contact_Options_Result>("Staging.USP_Select_Contact_Options", commandType: CommandType.StoredProcedure);
+                //Group by phone number
                 return options
                          .GroupBy(o => o.Number, o => o.ContactName)
                          .ToDictionary(go => go.Key, go => go.ToList());
