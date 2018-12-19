@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarboniteXmlParser.Test", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileCreatorTool", "FileCreatorTool\FileCreatorTool.csproj", "{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,19 +51,16 @@ Global
 		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Debug|x64.Build.0 = Debug|x64
 		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Release|Any CPU.Build.0 = Release|Any CPU
-<<<<<<< Updated upstream
-=======
 		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Release|x64.ActiveCfg = Release|x64
 		{54BDFE85-5F3C-4CF3-A505-89F027AF26F2}.Release|x64.Build.0 = Release|x64
-		{B929A00A-E7CE-4536-8964-7A1815BC739A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B929A00A-E7CE-4536-8964-7A1815BC739A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B929A00A-E7CE-4536-8964-7A1815BC739A}.Debug|x64.ActiveCfg = Debug|x64
-		{B929A00A-E7CE-4536-8964-7A1815BC739A}.Debug|x64.Build.0 = Debug|x64
-		{B929A00A-E7CE-4536-8964-7A1815BC739A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B929A00A-E7CE-4536-8964-7A1815BC739A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B929A00A-E7CE-4536-8964-7A1815BC739A}.Release|x64.ActiveCfg = Release|x64
-		{B929A00A-E7CE-4536-8964-7A1815BC739A}.Release|x64.Build.0 = Release|x64
->>>>>>> Stashed changes
+		{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}.Debug|x64.Build.0 = Debug|Any CPU
+		{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}.Release|x64.ActiveCfg = Release|Any CPU
+		{9A62AF7F-B0B6-4D56-9650-ED7F410BB590}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
