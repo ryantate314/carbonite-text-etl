@@ -32,14 +32,17 @@
             System.Windows.Forms.ColumnHeader dateColumn;
             System.Windows.Forms.ColumnHeader messageColumn;
             this.messageList = new System.Windows.Forms.ListView();
-            this.directionColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.contactColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.directionColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.messageListContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.editMessageMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addMessageButton = new System.Windows.Forms.Button();
+            this.messagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             dateColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             messageColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.messageListContextMenu.SuspendLayout();
@@ -70,26 +73,27 @@
             this.messageList.FullRowSelect = true;
             this.messageList.Location = new System.Drawing.Point(12, 27);
             this.messageList.Name = "messageList";
-            this.messageList.Size = new System.Drawing.Size(927, 348);
+            this.messageList.Size = new System.Drawing.Size(927, 382);
             this.messageList.TabIndex = 0;
             this.messageList.UseCompatibleStateImageBehavior = false;
             this.messageList.View = System.Windows.Forms.View.Details;
-            // 
-            // directionColumn
-            // 
-            this.directionColumn.Text = "Direction";
             // 
             // contactColumn
             // 
             this.contactColumn.Text = "Contact";
             this.contactColumn.Width = 133;
             // 
+            // directionColumn
+            // 
+            this.directionColumn.Text = "Direction";
+            // 
             // messageListContextMenu
             // 
             this.messageListContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.editMessageMenuItem});
+            this.editMessageMenuItem,
+            this.deleteToolStripMenuItem});
             this.messageListContextMenu.Name = "messageListContextMenu";
-            this.messageListContextMenu.Size = new System.Drawing.Size(95, 26);
+            this.messageListContextMenu.Size = new System.Drawing.Size(108, 48);
             // 
             // editMessageMenuItem
             // 
@@ -101,7 +105,8 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.messagesToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(951, 24);
@@ -119,26 +124,47 @@
             // exportToolStripMenuItem
             // 
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.exportToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exportToolStripMenuItem.Text = "Export";
+            this.exportToolStripMenuItem.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
             // 
-            // addMessageButton
+            // messagesToolStripMenuItem
             // 
-            this.addMessageButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.addMessageButton.Location = new System.Drawing.Point(864, 381);
-            this.addMessageButton.Name = "addMessageButton";
-            this.addMessageButton.Size = new System.Drawing.Size(75, 23);
-            this.addMessageButton.TabIndex = 2;
-            this.addMessageButton.Text = "Add";
-            this.addMessageButton.UseVisualStyleBackColor = true;
-            this.addMessageButton.Click += new System.EventHandler(this.addMessageButton_click);
+            this.messagesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addToolStripMenuItem,
+            this.clearToolStripMenuItem});
+            this.messagesToolStripMenuItem.Name = "messagesToolStripMenuItem";
+            this.messagesToolStripMenuItem.Size = new System.Drawing.Size(70, 20);
+            this.messagesToolStripMenuItem.Text = "Messages";
+            // 
+            // addToolStripMenuItem
+            // 
+            this.addToolStripMenuItem.Name = "addToolStripMenuItem";
+            this.addToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.addToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addToolStripMenuItem.Text = "Add";
+            this.addToolStripMenuItem.Click += new System.EventHandler(this.addToolStripMenuItem_Click);
+            // 
+            // clearToolStripMenuItem
+            // 
+            this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            this.clearToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.clearToolStripMenuItem.Text = "Clear";
+            this.clearToolStripMenuItem.Click += new System.EventHandler(this.clearToolStripMenuItem_Click);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.deleteToolStripMenuItem.Text = "Delete";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // ListForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(951, 421);
-            this.Controls.Add(this.addMessageButton);
             this.Controls.Add(this.messageList);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -160,9 +186,12 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
-        private System.Windows.Forms.Button addMessageButton;
         private System.Windows.Forms.ContextMenuStrip messageListContextMenu;
         private System.Windows.Forms.ToolStripMenuItem editMessageMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem messagesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
     }
 }
 

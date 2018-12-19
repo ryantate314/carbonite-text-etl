@@ -8,25 +8,32 @@ using System.Threading.Tasks;
 
 namespace CarboniteXmlParser.XmlEntities
 {
-   public class Sms : Message
-   {
-      public int TPStatus { get; set; }
-      public MessageType MessageType { get; set; }
-      public string Body { get; set; }
+    public class Sms : Message
+    {
+        public int Protocol { get; set; }
+        public int TPStatus { get; set; }
+        public MessageType MessageType { get; set; }
+        public string Body { get; set; }
+        public string Subject { get; set; }
 
-      public override string GetMessageId()
-      {
-         string hash;
-         using (var md5 = MD5.Create())
-         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append(Date.ToString());
-            builder.Append(Body);
-            hash = Convert.ToBase64String(md5.ComputeHash(Encoding.ASCII.GetBytes(builder.ToString())));
-            hash = hash.Replace("=", ""); //Remove padding characters
-         }
-         hash.Replace("=", "");
-         return $"sms-{hash}";
-      }
-   }
+        public Sms()
+        {
+            Protocol = 0;
+        }
+
+        public override string GetMessageId()
+        {
+            string hash;
+            using (var md5 = MD5.Create())
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.Append(Date.ToString());
+                builder.Append(Body);
+                hash = Convert.ToBase64String(md5.ComputeHash(Encoding.ASCII.GetBytes(builder.ToString())));
+                hash = hash.Replace("=", ""); //Remove padding characters
+            }
+            hash.Replace("=", "");
+            return $"sms-{hash}";
+        }
+    }
 }

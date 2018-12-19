@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackupFile.cs" />
+    <Compile Include="FileGenerator.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="MessageDirection.cs" />
     <Compile Include="MessageEntryForm.cs">
@@ -88,6 +90,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CarboniteXmlParser\CarboniteXmlParser.csproj">
+      <Project>{6EF3D01D-B760-4D9F-9C65-FE4C8616D216}</Project>
+      <Name>CarboniteXmlParser</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -63,7 +63,55 @@ namespace FileCreatorTool
             return item;
         }
 
-        private void addMessageButton_click(object sender, EventArgs e)
+        private void editMessageMenuItem_Click(object sender, EventArgs e)
+        {
+            ListViewItem selected = messageList.FocusedItem;
+            var message = selected?.Tag as Message;
+            if (message != null)
+            {
+                var editForm = new MessageEntryForm(message);
+                var result = editForm.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    Render();
+                }
+            }
+        }
+
+        private void exportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var saveDialog = new SaveFileDialog();
+            saveDialog.Filter = "XML Files|*.xml";
+
+            var result = saveDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                var gen = new FileGenerator();
+                try
+                {
+                    gen.SaveFile(saveDialog.FileName, _messages);
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error Saving File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ListViewItem selected = messageList.FocusedItem;
+            var message = selected?.Tag as Message;
+            if (message != null)
+            {
+                _messages.Remove(message);
+
+                messageList.Items.Remove(selected);
+            }
+        }
+
+        private void addToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var message = new Message();
             var template = GetTemplateMessage();
@@ -79,21 +127,14 @@ namespace FileCreatorTool
                 AddMessage(message);
                 Render();
             }
-
         }
 
-        private void editMessageMenuItem_Click(object sender, EventArgs e)
+        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ListViewItem selected = messageList.FocusedItem;
-            var message = selected?.Tag as Message;
-            if (message != null)
+            if (MessageBox.Show("Are you sure?", "Clear all Messages", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation) == DialogResult.OK)
             {
-                var editForm = new MessageEntryForm(message);
-                var result = editForm.ShowDialog();
-                if (result == DialogResult.OK)
-                {
-                    Render();
-                }
+                _messages.Clear();
+                Render();
             }
         }
     }
